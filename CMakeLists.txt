@@ -26,9 +26,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt5_wrap_cpp(CAMCALIB_MOC ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/QImageModel.h
-                          ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/QProgressState.h
-                          ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/QProgressState.h
+qt5_wrap_cpp(CAMCALIB_MOC ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/ImageModel.h
+                          ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/ProgressState.h
+                          ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/ProgressState.h
                           ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/ResizeableGraphicsView.h
                           ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/CalibrationWidget.h)
 
@@ -37,9 +37,9 @@ add_executable(camcalib src/CameraCalibration.cpp
                         src/utils.cpp
                         gui/src/CalibrationWidget.cpp
                         gui/src/main.cpp
-                        gui/src/QFileItem.cpp
-                        gui/src/QImageModel.cpp
-                        gui/src/QProgressState.cpp
+                        gui/src/FileItem.cpp
+                        gui/src/ImageModel.cpp
+                        gui/src/ProgressState.cpp
                         gui/src/ResizeableGraphicsView.cpp
                         ${CAMCALIB_MOC})
 

@@ -1,22 +1,22 @@
 /*
- * QFileItem.h
+ * FileItem.h
  *
  *  Created on: 05.03.2014
  *      Author: Stephan Manthe
  */
 
-#ifndef QFILEITEM_H_
-#define QFILEITEM_H_
+#ifndef FILEITEM_H_
+#define FILEITEM_H_
 
 #include <QStandardItem>
 #include <QFileInfo>
 
 
-class QFileItem: public QStandardItem
+class FileItem: public QStandardItem
 {
 public:
-	QFileItem(const QFileInfo &fi);
-	virtual ~QFileItem();
+	FileItem(const QFileInfo &fi);
+	virtual ~FileItem();
 
 	const QFileInfo& getInfo() const;
 	void setInfo(const QFileInfo& info);
@@ -24,4 +24,4 @@ protected:
 	QFileInfo fInfo;
 };
 
-#endif /* QFILEITEM_H_ */
+#endif /* FILEITEM_H_ */

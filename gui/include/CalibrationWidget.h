@@ -12,8 +12,8 @@
 #include <QWidget>
 #include "CameraCalibration.h"
 class QMessageBox;
-class QImageModel;
-class QProgressState;
+class ImageModel;
+class ProgressState;
 class QGraphicsItem;
 
 namespace Ui
@@ -47,10 +47,10 @@ protected:
 	Ui::CalibrationWidget *widget;
 	QMessageBox *errorDialog;
 
-	QImageModel *imgModel;
+	ImageModel *imgModel;
 	QGraphicsItem *currentImage;
 
-	QProgressState* calibrationState;
+	ProgressState* calibrationState;
 	
     libba::CameraCalibration calibTool;
     QFuture<void> calibrationFuture;

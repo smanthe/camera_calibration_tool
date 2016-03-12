@@ -1,26 +1,26 @@
 /*
- * QProgressState.h
+ * ProgressState.h
  *
  *  Created on: 26.02.2014
  *      Author: Stephan Manthe
  */
 
-#ifndef QPROGRESSSTATE_H_
-#define QPROGRESSSTATE_H_
+#ifndef PROGRESSSTATE_H_
+#define PROGRESSSTATE_H_
 
 #include <QObject>
 
 class QProgressBar;
 
-class QProgressState:public QObject
+class ProgressState:public QObject
 {
 	Q_OBJECT
 public:
-	QProgressState();
-	virtual ~QProgressState();
+	ProgressState();
+	virtual ~ProgressState();
 	QProgressBar *progBar;
 
-	QProgressState(QProgressBar* pBar, QObject* parent = 0);
+	ProgressState(QProgressBar* pBar, QObject* parent = 0);
 
 	void emitSignals(int currentStep, int maxSteps, std::string fileName);
 
@@ -29,4 +29,4 @@ signals:
 		void setRange(int, int );
 };
 
-#endif /* QPROGRESSSTATE_H_ */
+#endif /* PROGRESSSTATE_H_ */

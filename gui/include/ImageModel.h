@@ -1,12 +1,12 @@
 /*
- * QImageModel.h
+ * ImageModel.h
  *
  *  Created on: 28.01.2014
  *      Author: Stephan Manthe
  */
 
-#ifndef QIMAGEMODEL_H_
-#define QIMAGEMODEL_H_
+#ifndef IMAGEMODEL_H_
+#define IMAGEMODEL_H_
 
 #include <vector>
 #include <string>
@@ -20,7 +20,7 @@
  * See http://programmingexamples.net/wiki/Qt/ModelView/QAbstractTableModel
  * http://paste.cdtag.de/view.php?id=23679
  */
-class QImageModel:public QStandardItemModel
+class ImageModel:public QStandardItemModel
 {
 	Q_OBJECT
 public:
@@ -34,8 +34,8 @@ public:
         std::vector<cv::Point2f> boardCornersImg;
 	};
 
-	QImageModel(QObject  *parent=0);
-	virtual ~QImageModel();
+	ImageModel(QObject  *parent=0);
+	virtual ~ImageModel();
 
 	void addImage(QString imgPath);
 
@@ -55,5 +55,5 @@ public slots:
     void changeItem(QStandardItem* item);
 };
 
-Q_DECLARE_METATYPE(QImageModel::ImgData)
+Q_DECLARE_METATYPE(ImageModel::ImgData)
 #endif /* QIMAGEMODEL_H_ */

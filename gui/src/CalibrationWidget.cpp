@@ -13,9 +13,9 @@
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
 #include <QWidget>
-#include <QProgressState.h>
+#include <ProgressState.h>
 #include <QMessageBox>
-#include "QImageModel.h"
+#include "ImageModel.h"
 #include <QtCore>
 #include <QtConcurrent>
 
@@ -27,7 +27,7 @@
 CalibrationWidget::CalibrationWidget(QWidget* parent):
 	QWidget(parent),
 	widget(new Ui::CalibrationWidget),
-	imgModel(new QImageModel),
+	imgModel(new ImageModel),
 	currentImage(0),
 	calibrationRunning(false)
 {
@@ -84,7 +84,7 @@ void CalibrationWidget::startCalibration()
 		return;
 	}
 
-	std::vector<QImageModel::ImgData> imageData = imgModel -> getImageData();
+	std::vector<ImageModel::ImgData> imageData = imgModel -> getImageData();
 	if(imageData.size() <= 0)
 	{
 		errorDialog->setText(trUtf8("Es muss mindestens eine Datei für die Kalibrierung ausgewählt sein."));
@@ -142,7 +142,7 @@ void CalibrationWidget::doCalibration(const QString& filePath,
                                       const std::vector<int>& filePathModelIndices)
 {
 	using namespace std::placeholders;
-	auto f = std::bind(&QProgressState::emitSignals, calibrationState,
+	auto f = std::bind(&ProgressState::emitSignals, calibrationState,
                         std::placeholders::_1, std::placeholders::_2,
                         std::placeholders::_3);
 	try
@@ -166,7 +166,7 @@ void CalibrationWidget::doCalibration(const QString& filePath,
 	for(size_t i = 0; i < imgs.size(); ++i)
 	{
         int modelIdx =  filePathModelIndices[i];
-        QImageModel::ImgData data = imgModel->getImageData(modelIdx);
+        ImageModel::ImgData data = imgModel->getImageData(modelIdx);
         data.found = imgs[i].patternFound;     
 		data.error = imgs[i].reprojectionError;
         data.boardCornersImg = imgs[i].boardCornersImg;
@@ -254,7 +254,7 @@ void CalibrationWidget::setupUi()
 	widget->tableView_images->horizontalHeader()->sectionResizeMode(QHeaderView::ResizeToContents);
 	widget->tableView_images->resizeColumnsToContents();
 
-	calibrationState = new QProgressState(widget->progressBar);
+	calibrationState = new ProgressState(widget->progressBar);
 }
 
 void CalibrationWidget::showImage(const QModelIndex& index)
