@@ -40,8 +40,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 	std::vector<cv::Point3f> chessboardCorners3d;
 	for( int i = 0; i < chessboardCorners.height; ++i)
 		for( int j = 0; j < chessboardCorners.width; ++j)
-            // TODO try emplace_back
-			chessboardCorners3d.push_back(cv::Point3f(float( j*chessboardSquareWidth ), float( i*chessboardSquareWidth ), 0));
+			chessboardCorners3d.emplace_back(float( j*chessboardSquareWidth ), float( i*chessboardSquareWidth ), 0);
             
 	if(calibImages.size() == 0)
 		throw std::runtime_error("No images for calibration provided.");
@@ -93,11 +92,10 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 		calibImages[i].patternFound = true;
 		calibImages[i].boardCornersImg = cornersTemp;
  
-		if(stopRequested)
+		if (stopRequested)
 			return;
 
-        // TODO try std::move
-		imgCorners.push_back(cornersTemp);
+		imgCorners.push_back(std::move(cornersTemp));
 		patternCorners.push_back(chessboardCorners3d);
 
 		statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
@@ -266,7 +264,7 @@ void CameraCalibration::addFile(const std::string& file)
 	imgInfo.patternFound = false;
     imgInfo.filePath = file;
     
-    calibImages.push_back(imgInfo);
+    calibImages.push_back(std::move(imgInfo));
 }
 
 void CameraCalibration::removeFile(int index)
