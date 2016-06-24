@@ -365,6 +365,9 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 {
 	QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("XML (*.xml)"));
+    if(filePath == "")
+        return;
+
 	calibTool.loadCameraParameter(filePath.toStdString());
 	updateResults();
 }
