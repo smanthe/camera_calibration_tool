@@ -15,6 +15,7 @@ namespace libba
 
 CameraCalibration::CameraCalibration():
 	chessboardCorners(8,6),
+    cornerRefinmentWindowSize(10, 10),
 	chessboardSquareWidth(0.0068),
 	stopRequested(false),
 	reprojectionError(0),
@@ -87,8 +88,11 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 			statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
 			continue;
 		}
+    
+		if (cornerRefinmentWindowSize.width > 0 &&
+            cornerRefinmentWindowSize.height > 0)
+            cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
 
-		cv::cornerSubPix(img, cornersTemp, cv::Size(20, 20), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
 		calibImages[i].patternFound = true;
 		calibImages[i].boardCornersImg = cornersTemp;
  
@@ -280,6 +284,11 @@ void CameraCalibration::clearFiles()
 void CameraCalibration::setChessboardSize(const cv::Size2i& chessboardSize)
 {
 	this->chessboardCorners = chessboardSize;
+}
+
+void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRefinmentWindowSize)
+{
+    this->cornerRefinmentWindowSize = cornerRefinmentWindowSize;
 }
 
 void CameraCalibration::setChessboardSquareWidth(float chessboardSquareWidth)

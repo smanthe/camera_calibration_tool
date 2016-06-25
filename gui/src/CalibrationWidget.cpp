@@ -60,21 +60,37 @@ void CalibrationWidget::startCalibration()
   // Read settings
 	bool ok = false;
 
-	int cornersHorizontal = this ->widget->lineEdit_eckenHorizontal->text().toInt(&ok);
+	const int cornersHorizontal = this ->widget->lineEdit_eckenHorizontal->text().toInt(&ok);
 	if(!ok)
 	{
-		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die Anzahl der horizontalen Ecken überprüfen."));
+		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die Anzahl der horizontalen Ecken überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
 		errorDialog->show();
 		return;
 	}
 
-	int cornersVertical = this ->widget->lineEdit_eckenVertikal->text().toInt(&ok);
+	const int cornersVertical = this ->widget->lineEdit_eckenVertikal->text().toInt(&ok);
 	if(!ok)
 	{
-		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die Anzahl der vertikalen Ecken überprüfen."));
+		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die Anzahl der vertikalen Ecken überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
 		errorDialog->show();
 		return;
 	}
+
+    const int32_t cornerRefinmentWindowSizeHorizontal = this -> widget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
+    if(!ok)
+    {
+		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die horizontale Fenstergröße der Eckenverfeinerung überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
+		errorDialog->show();
+        return;
+    }
+
+    const int32_t cornerRefinmentWindowSizeVertical = this -> widget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
+    if(!ok)
+    {
+		errorDialog->setText(trUtf8("Bitte das Eingabefeld für die vertikale Fenstergröße der Eckenverfeinerung überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
+		errorDialog->show();
+        return;
+    }
 
 	double squareWidth = this -> widget->lineEdit_quadratGroesse->text().toDouble(&ok);
 	if(!ok)
@@ -127,6 +143,7 @@ void CalibrationWidget::startCalibration()
   // set parameters
 	calibTool.setChessboardSize(cv::Size2i(cornersHorizontal, cornersVertical));
     calibTool.setChessboardSquareWidth(squareWidth);
+    calibTool.setCornerRefinmentWindowSize(cv::Size2i(cornerRefinmentWindowSizeHorizontal, cornerRefinmentWindowSizeVertical));
 
 	widget->pushButton_kalibrieren->setText(trUtf8("Kalibrierung stoppen"));
     widget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -141,20 +158,29 @@ void CalibrationWidget::startCalibration()
 void CalibrationWidget::doCalibration(const QString& filePath,
                                       const std::vector<int>& filePathModelIndices)
 {
-	using namespace std::placeholders;
+	namespace pl = std::placeholders;
 	auto f = std::bind(&ProgressState::emitSignals, calibrationState,
-                        std::placeholders::_1, std::placeholders::_2,
-                        std::placeholders::_3);
+                        pl::_1, pl::_2,
+                        pl::_3);
 	try
 	{
 		calibTool.calibrateCamera(f);
 	}
-	catch(std::runtime_error &e)
+	catch(const std::runtime_error &e)
 	{
-		std::cerr << "Error:" << e.what() << std::endl;
 		emit calibrationDone(false, QString::fromStdString(e.what()));
 		return;
 	}
+    catch(const cv::Exception& e)
+    {
+        emit calibrationDone(false, QString::fromStdString(e.what()));
+		return;
+    }
+    catch(...)
+    {
+		emit calibrationDone(false, trUtf8("Unbekannter Fehler."));
+        return;
+    }
 
 	if(calibTool.isStopRequested())
  		return;
@@ -163,9 +189,9 @@ void CalibrationWidget::doCalibration(const QString& filePath,
 	const std::vector<libba::CameraCalibration::CalibImgInfo> imgs = calibTool.getCalibInfo();
 
   // update the imagemodel
-	for(size_t i = 0; i < imgs.size(); ++i)
+	for (size_t i = 0; i < imgs.size(); ++i)
 	{
-        int modelIdx =  filePathModelIndices[i];
+        int modelIdx = filePathModelIndices[i];
         ImageModel::ImgData data = imgModel->getImageData(modelIdx);
         data.found = imgs[i].patternFound;     
 		data.error = imgs[i].reprojectionError;
@@ -234,11 +260,14 @@ void CalibrationWidget::on_pushButton_ordnerHinzufuegen_clicked()
 void CalibrationWidget::setupUi()
 {
 	widget->setupUi(this);
-	QIntValidator *qiv = new QIntValidator(0, 999999, this);
 
-    qiv = new QIntValidator(2, 100, this);
+    QIntValidator* qiv = new QIntValidator(2, 100, this);
 	widget->lineEdit_eckenHorizontal->setValidator(qiv);
 	widget->lineEdit_eckenVertikal->setValidator(qiv);
+
+    QIntValidator* qiv2 = new QIntValidator(0,100, this);
+    widget->lineEdit_cornerRefinmentWindowSizeVertical->setValidator(qiv2);
+    widget->lineEdit_cornerRefinmentWindowSizeHorizontal->setValidator(qiv2);
 
 	QDoubleValidator *qdv = new QDoubleValidator(0, 9999999999999, 10, this);
 	widget->lineEdit_quadratGroesse->setValidator(qdv);
@@ -347,9 +376,8 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 		return;
 	}
 
-	int precision = 5;
-
-	std::string tableStyle = "cellpadding=\"2\"";
+	constexpr int precision = 5;
+	const std::string tableStyle = "cellpadding=\"2\"";
 	std::string tableHTML = libba::matrixToHTML(calibTool.getCameraMatrix(), tableStyle, precision);
 
 	widget->label_cameraMatrix->setText(QString::fromStdString(tableHTML));
@@ -380,7 +408,7 @@ void CalibrationWidget::connectSignalsAndSlots()
 {
 	connect(widget->tableView_images, SIGNAL( pressed(const QModelIndex &)), this, SLOT( showImage(const QModelIndex &)));
 	connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(updateResults(bool, QString)) );
-	connect(this, SIGNAL(calibrationDone(bool)), this, SLOT(stopCalibration()) );
+	connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(stopCalibration()) );
     connect(imgModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this -> imgModel, SLOT(rowsRemoved(const QModelIndex &, int, int)));
 }
 

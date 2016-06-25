@@ -72,6 +72,7 @@ public:
 	void clearFiles();
 
 	void setChessboardSize(const cv::Size2i& chessboardSize);
+    void setCornerRefinmentWindowSize(const cv::Size2i& cornerRefinmentWindowSize);
 	void setChessboardSquareWidth(float chessboardSquareWidth);
 	bool isStopRequested() const;
 	float getReprojectionError() const;
@@ -96,6 +97,11 @@ protected:
 	 * The size of the images which where used.
 	 */
 	cv::Size2i imageSize;
+
+    /**
+     * Size of the corner refinment window
+     */	
+    cv::Size2i cornerRefinmentWindowSize;
 
 	/**
 	 * The size of the squares on the calibration pattern.
