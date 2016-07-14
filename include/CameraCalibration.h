@@ -27,7 +27,7 @@ public:
 	{
 		std::string filePath = "";
 		bool patternFound = false;
-		cv::vector<cv::Point2f> boardCornersImg;
+		std::vector<cv::Point2f> boardCornersImg;
 		float reprojectionError = -1;
 	};
 
