@@ -55,7 +55,9 @@ public:
 	/**
 	 * Computes the reprojection error of the last camera calibration.
 	 */
-	float computeReprojectionError();
+	double computeReprojectionError();
+
+    double computeDistortUndistortError();
 
 	/**
 	 * Loads camera parameters from a file which was created with cv::Filestorage.

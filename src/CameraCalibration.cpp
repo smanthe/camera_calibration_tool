@@ -58,7 +58,6 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 		calibImages[i].patternFound = false;
 		
         currentStep++;
-		std::vector<cv::Point2f> cornersTemp;
 		img = cv::imread(calibImages[i].filePath, CV_LOAD_IMAGE_GRAYSCALE);
 
         if(imageSize.width == -1)
@@ -77,6 +76,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 			throw std::runtime_error(errorMsg);
 		}
 
+		std::vector<cv::Point2f> cornersTemp;
 		bool patternFound = cv::findChessboardCorners(img, chessboardCorners, cornersTemp, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
 		if(stopRequested)
@@ -88,10 +88,32 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 			statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
 			continue;
 		}
-    
+        
 		if (cornerRefinmentWindowSize.width > 0 &&
             cornerRefinmentWindowSize.height > 0)
-            cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+        {
+            // TODO make this a option for the gui
+            if (true)
+            {
+                cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+            }
+            else
+            {
+                try
+                {
+                    cv::find4QuadCornerSubpix(img, cornersTemp, cornerRefinmentWindowSize);
+                }
+                catch (cv::Exception& e)
+                {
+                    calibImages[i].patternFound = false;
+                    statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+                    
+                    std::cout << "OpenCV exception for image " << i
+                              << " in find4QuadCornerSubpix : " << e.what() << std::endl;
+                    continue;
+                }
+            }
+        }
 
 		calibImages[i].patternFound = true;
 		calibImages[i].boardCornersImg = cornersTemp;
@@ -108,7 +130,10 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 	try
 	{
 		calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
-		distortionCoefficients = cv::Mat::zeros(8, 1, CV_64F);
+		distortionCoefficients = cv::Mat::zeros(12, 1, CV_64F);
+        // TODO Show this option at the gui 
+        //const int flags = CV_CALIB_RATIONAL_MODEL;
+		//cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix, distortionCoefficients, rotationVector, translationVector, flags);
 		cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix, distortionCoefficients, rotationVector, translationVector);
 		currentStep++;
 		statusFunc(currentStep, maxNumberSteps, "");
@@ -119,6 +144,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 	}
 
 	reprojectionError = computeReprojectionError();
+    //computeDistortUndistortError(); // TODO Display this error inside of the gui
 	calibDataAvailabel = true;
 }
 
@@ -193,7 +219,7 @@ void CameraCalibration::loadCameraParameter(const std::string& filePath)
 	fs.release();
 }
 
-float CameraCalibration::computeReprojectionError()
+double CameraCalibration::computeReprojectionError()
 {
 	assert(patternCorners.size() == rotationVector.size());
 	assert(patternCorners.size() == translationVector.size());
@@ -208,13 +234,13 @@ float CameraCalibration::computeReprojectionError()
 			continue;
 
 	    std::vector<cv::Point2f> projectedPoints;
-		cv::projectPoints(cv::Mat(patternCorners[idx]), rotationVector[idx], translationVector[idx], calibrationMatrix, distortionCoefficients, projectedPoints);
+        cv::projectPoints(cv::Mat(patternCorners[idx]), rotationVector[idx], translationVector[idx], calibrationMatrix, distortionCoefficients, projectedPoints);
 
         double error = 0;
         for (size_t j = 0; j < projectedPoints.size(); ++j)
         {
-            double x = projectedPoints[j].x - imgCorners[idx][j].x;
-            double y = projectedPoints[j].y - imgCorners[idx][j].y;
+            const double x = projectedPoints[j].x - imgCorners[idx][j].x;
+            const double y = projectedPoints[j].y - imgCorners[idx][j].y;
 
             error += sqrt(x*x + y*y);
         }
@@ -231,6 +257,41 @@ float CameraCalibration::computeReprojectionError()
 		return 0.0f;
 
 	return totalErr/totalPoints;
+}
+
+double CameraCalibration::computeDistortUndistortError()
+{
+    double error = 0;
+   
+    std::vector<cv::Point3d> points_Iu; 
+    for (double i = -2; i <= 2; i += 0.1)
+    {
+        for (double j = -2; j <= 2; j += 0.1)
+        {
+            points_Iu.emplace_back(i, j, 1);
+        }
+    }
+
+    cv::Mat rRod, tVec;
+    tVec = cv::Mat::zeros(3, 1,CV_64F);
+    cv::Rodrigues(cv::Mat::eye(3,3,CV_64F), rRod);
+   
+    std::vector<cv::Point2d> points_P;
+    cv::projectPoints(points_Iu, rRod, tVec, calibrationMatrix, distortionCoefficients, points_P);
+ 
+    std::vector<cv::Point2d> points2_Iu;
+    cv::undistort(points_P, points2_Iu, calibrationMatrix, distortionCoefficients);
+
+    for (size_t i = 0; i < points_Iu.size(); ++i)
+    {
+        const double x = points_Iu[i].x - points2_Iu[i].x;
+        const double y = points_Iu[i].y - points2_Iu[i].y;
+
+        error += sqrt(x * x + y * y);
+    }
+    
+    error /= points_Iu.size();
+    return error;
 }
 
 const cv::Mat& CameraCalibration::getCameraMatrix() const
@@ -267,7 +328,6 @@ void CameraCalibration::addFile(const std::string& file)
 	CalibImgInfo imgInfo;
 	imgInfo.patternFound = false;
     imgInfo.filePath = file;
-    
     calibImages.push_back(std::move(imgInfo));
 }
 
