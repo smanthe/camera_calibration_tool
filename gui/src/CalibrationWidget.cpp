@@ -402,6 +402,8 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
         calibTool.loadCameraParameterJSON(filePath.toStdString()); 
     else if (match_result[0] == ".xml")
 	    calibTool.loadCameraParameter(filePath.toStdString()); 
+    else
+        return;
 	
     updateResults();
 }

@@ -216,6 +216,8 @@ void CameraCalibration::loadCameraParameterJSON(const std::string& filePath)
 
     imageSize.width = ptree.get<int>("horizontal_resolution");
     imageSize.height = ptree.get<int>("vertical_resolution");
+
+    calibDataAvailabel = true;
 }
 
 void CameraCalibration::exportCameraParameterROS(const std::string &filePath) const
@@ -242,8 +244,8 @@ void CameraCalibration::loadCameraParameter(const std::string& filePath)
 	fs["horizontal_resolution"] >> imageSize.width;
 	fs["reprojection_error"] >> reprojectionError;
     
-    this->calibDataAvailabel = true;
-
+    calibDataAvailabel = true;
+    
 	fs.release();
 }
 
