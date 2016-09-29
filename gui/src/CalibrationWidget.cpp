@@ -5,25 +5,22 @@
  *  Created on: 26.01.2014
  *      Author: Stephan Manthe
  */
-#include <vector>
-#include <functional>
-#include <regex>
-
 #include "CalibrationWidget.h"
-#include <QFileDialog>
-#include <QGraphicsPixmapItem>
-#include <QWidget>
-#include <ProgressState.h>
-#include <QMessageBox>
 #include "ImageModel.h"
-#include <QtCore>
-#include <QtConcurrent>
-
-#include "utils.h"
-
 #include "qtOpenCVConversions.h"
 #include "ui_CalibrationWidget.h"
- 
+#include "utils.h"
+#include <ProgressState.h>
+#include <QFileDialog>
+#include <QGraphicsPixmapItem>
+#include <QMessageBox>
+#include <QWidget>
+#include <QtConcurrent>
+#include <QtCore>
+#include <functional>
+#include <regex>
+#include <vector>
+
 CalibrationWidget::CalibrationWidget(QWidget* parent):
 	QWidget(parent),
 	widget(new Ui::CalibrationWidget),
@@ -392,12 +389,21 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 
 void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 {
-	QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("XML (*.xml)"));
+	QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("XML (*.xml);;JSON (*.json)"));
     if(filePath == "")
         return;
 
-	calibTool.loadCameraParameter(filePath.toStdString());
-	updateResults();
+    std::smatch match_result;
+    std::regex pattern("\\.(json|xml)?$");
+    if (!std::regex_search(filePath.toStdString(), match_result, pattern))
+        throw std::runtime_error("Path does not match the pattern.");
+  
+    if (match_result[0] == ".json")
+        calibTool.loadCameraParameterJSON(filePath.toStdString()); 
+    else if (match_result[0] == ".xml")
+	    calibTool.loadCameraParameter(filePath.toStdString()); 
+	
+    updateResults();
 }
 
 void CalibrationWidget::on_comboBox_ansicht_currentIndexChanged(int index)

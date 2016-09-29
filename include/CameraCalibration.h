@@ -63,6 +63,8 @@ public:
 	 * Loads camera parameters from a file which was created with cv::Filestorage.
 	 */
 	void loadCameraParameter(const std::string& filePath);
+	
+    void loadCameraParameterJSON(const std::string& filePath);
 
 	const cv::Mat& getCameraMatrix() const;
 	const cv::Mat& getDistCoeffs() const;

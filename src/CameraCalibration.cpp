@@ -189,6 +189,34 @@ void CameraCalibration::exportCameraParameterJSON(const std::string &filePath) c
 	root.put("reprojection_error", reprojectionError);
     pt::write_json(filePath, root);
 }
+void CameraCalibration::loadCameraParameterJSON(const std::string& filePath)
+{
+    namespace pt = boost::property_tree;
+    calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
+
+    pt::ptree ptree;
+    pt::read_json(filePath, ptree);
+
+    calibrationMatrix.at<double>(0, 0) = ptree.get<double>("fx");
+    calibrationMatrix.at<double>(1, 1) = ptree.get<double>("fy");
+    calibrationMatrix.at<double>(0, 2) = ptree.get<double>("cx");
+    calibrationMatrix.at<double>(1, 2) = ptree.get<double>("cy");
+
+    const pt::ptree distPtree = ptree.get_child("distortion_coefficients");
+    const pt::ptree coefficentsPtree = distPtree.get_child("coefficents");
+
+    const int rows = distPtree.get<int>("rows");
+    distortionCoefficients = cv::Mat::zeros(rows, 1, CV_64F);
+    int i = 0;
+    for (const auto& c : coefficentsPtree)
+    {
+        distortionCoefficients.at<double>(i, 0) = c.second.get_value<double>();
+        i++;
+    }
+
+    imageSize.width = ptree.get<int>("horizontal_resolution");
+    imageSize.height = ptree.get<int>("vertical_resolution");
+}
 
 void CameraCalibration::exportCameraParameterROS(const std::string &filePath) const
 {
