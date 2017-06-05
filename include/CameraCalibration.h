@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <regex>
 #include <functional>
 #include <opencv2/opencv.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -85,6 +86,7 @@ public:
 	bool isCalibrationDataAvailable() const;
 
     cv::Size getChessboardSize() const;
+    float getChessboardSquareWidth() const;
 
 protected:
 	/**
