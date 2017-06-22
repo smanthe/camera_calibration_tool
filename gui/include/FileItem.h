@@ -8,20 +8,21 @@
 #ifndef FILEITEM_H_
 #define FILEITEM_H_
 
-#include <QStandardItem>
 #include <QFileInfo>
+#include <QStandardItem>
 
 
-class FileItem: public QStandardItem
+class FileItem : public QStandardItem
 {
 public:
-	FileItem(const QFileInfo &fi);
-	virtual ~FileItem();
+    FileItem(const QFileInfo& fi);
+    virtual ~FileItem();
 
-	const QFileInfo& getInfo() const;
-	void setInfo(const QFileInfo& info);
+    const QFileInfo& getInfo() const;
+    void setInfo(const QFileInfo& info);
+
 protected:
-	QFileInfo fInfo;
+    QFileInfo fInfo;
 };
 
 #endif /* FILEITEM_H_ */

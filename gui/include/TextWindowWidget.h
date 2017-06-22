@@ -11,18 +11,17 @@
 #include <QWidget>
 #include <ui_textWindow.h>
 
-class QTextWindowWidget: public QWidget
+class QTextWindowWidget : public QWidget
 {
 public:
-	QTextWindowWidget();
-	virtual ~QTextWindowWidget();
+    QTextWindowWidget();
+    virtual ~QTextWindowWidget();
 
-	void setText(const QString &text);
-	void setupUi();
+    void setText(const QString& text);
+    void setupUi();
 
 protected:
-	Ui::TextWindow *ui;
-
+    Ui::TextWindow* ui;
 };
 
 #endif /* QTEXTWINDOWWIDGET_H_ */

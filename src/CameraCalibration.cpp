@@ -14,19 +14,17 @@
 namespace libba
 {
 
-CameraCalibration::CameraCalibration():
-	chessboardCorners(7,6),
-    cornerRefinmentWindowSize(10, 10),
-	chessboardSquareWidth(0.06),
-	stopRequested(false),
-	reprojectionError(0),
-	calibDataAvailabel(false)
+CameraCalibration::CameraCalibration()
+    : chessboardCorners(7, 6),
+      cornerRefinmentWindowSize(10, 10),
+      chessboardSquareWidth(0.06),
+      stopRequested(false),
+      reprojectionError(0),
+      calibDataAvailabel(false)
 {
 }
 
-CameraCalibration::~CameraCalibration()
-{
-}
+CameraCalibration::~CameraCalibration() {}
 
 void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string)> statusFunc)
 {
@@ -165,40 +163,40 @@ void CameraCalibration::saveCameraParameter(const std::string& filePath) const
         exportCameraParameterJSON(filePath);
 }
 
-void CameraCalibration::exportCameraParameterCv(const std::string &filePath) const
+void CameraCalibration::exportCameraParameterCv(const std::string& filePath) const
 {
     cv::FileStorage fs(filePath, cv::FileStorage::WRITE); // Read the settings
-	if (!fs.isOpened())
-	{
-		std::cerr<< "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
-		return;
-	}
-    
-	fs << "fx" << calibrationMatrix.at<double>(0,0);
-	fs << "fy" << calibrationMatrix.at<double>(1,1);
-	fs << "cx" << calibrationMatrix.at<double>(0,2);
-	fs << "cy" << calibrationMatrix.at<double>(1,2);
-	fs << "distortion_coefficients" << distortionCoefficients;
-	fs << "vertical_resolution" << imageSize.height;
-	fs << "horizontal_resolution" << imageSize.width;
-	fs << "reprojection_error" << reprojectionError;
+    if (!fs.isOpened())
+    {
+        std::cerr << "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
+        return;
+    }
 
-	fs.release();
+    fs << "fx" << calibrationMatrix.at<double>(0, 0);
+    fs << "fy" << calibrationMatrix.at<double>(1, 1);
+    fs << "cx" << calibrationMatrix.at<double>(0, 2);
+    fs << "cy" << calibrationMatrix.at<double>(1, 2);
+    fs << "distortion_coefficients" << distortionCoefficients;
+    fs << "vertical_resolution" << imageSize.height;
+    fs << "horizontal_resolution" << imageSize.width;
+    fs << "reprojection_error" << reprojectionError;
+
+    fs.release();
 }
 
-void CameraCalibration::exportCameraParameterJSON(const std::string &filePath) const
+void CameraCalibration::exportCameraParameterJSON(const std::string& filePath) const
 {
     namespace pt = boost::property_tree;
     pt::ptree root;
-    root.put("fx", calibrationMatrix.at<double>(0,0));
-	root.put("fy", calibrationMatrix.at<double>(1,1));
-	root.put("cx", calibrationMatrix.at<double>(0,2));
-	root.put("cy", calibrationMatrix.at<double>(1,2));
+    root.put("fx", calibrationMatrix.at<double>(0, 0));
+    root.put("fy", calibrationMatrix.at<double>(1, 1));
+    root.put("cx", calibrationMatrix.at<double>(0, 2));
+    root.put("cy", calibrationMatrix.at<double>(1, 2));
     pt::ptree distortionCoefficientsPt = matrix2PropertyTreeCv<double>(distortionCoefficients);
-	root.add_child("distortion_coefficients", distortionCoefficientsPt);
-	root.put("vertical_resolution", imageSize.height);
-	root.put("horizontal_resolution", imageSize.width);
-	root.put("reprojection_error", reprojectionError);
+    root.add_child("distortion_coefficients", distortionCoefficientsPt);
+    root.put("vertical_resolution", imageSize.height);
+    root.put("horizontal_resolution", imageSize.width);
+    root.put("reprojection_error", reprojectionError);
     pt::write_json(filePath, root);
 }
 void CameraCalibration::loadCameraParameterJSON(const std::string& filePath)
@@ -232,51 +230,50 @@ void CameraCalibration::loadCameraParameterJSON(const std::string& filePath)
     calibDataAvailabel = true;
 }
 
-void CameraCalibration::exportCameraParameterROS(const std::string &filePath) const
-{
-}
+void CameraCalibration::exportCameraParameterROS(const std::string& filePath) const {}
 
 void CameraCalibration::loadCameraParameter(const std::string& filePath)
 {
-	cv::FileStorage fs(filePath, cv::FileStorage::READ); // Read the settings
-	if(!fs.isOpened())
-	{
-		std::cerr<< "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
-		return;
-	}
+    cv::FileStorage fs(filePath, cv::FileStorage::READ); // Read the settings
+    if (!fs.isOpened())
+    {
+        std::cerr << "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
+        return;
+    }
 
-    calibrationMatrix = cv::Mat::eye(3,3, CV_64FC1);
-	fs["fx"] >> calibrationMatrix.at<double>(0,0);
-	fs["fy"] >> calibrationMatrix.at<double>(1,1);
-	fs["cx"] >> calibrationMatrix.at<double>(0,2);
-	fs["cy"] >> calibrationMatrix.at<double>(1,2);
+    calibrationMatrix = cv::Mat::eye(3, 3, CV_64FC1);
+    fs["fx"] >> calibrationMatrix.at<double>(0, 0);
+    fs["fy"] >> calibrationMatrix.at<double>(1, 1);
+    fs["cx"] >> calibrationMatrix.at<double>(0, 2);
+    fs["cy"] >> calibrationMatrix.at<double>(1, 2);
 
-	fs["distortion_coefficients"] >> distortionCoefficients;
-	fs["vertical_resolution"] >> imageSize.height;
-	fs["horizontal_resolution"] >> imageSize.width;
-	fs["reprojection_error"] >> reprojectionError;
-    
+    fs["distortion_coefficients"] >> distortionCoefficients;
+    fs["vertical_resolution"] >> imageSize.height;
+    fs["horizontal_resolution"] >> imageSize.width;
+    fs["reprojection_error"] >> reprojectionError;
+
     calibDataAvailabel = true;
-    
-	fs.release();
+
+    fs.release();
 }
 
 double CameraCalibration::computeReprojectionError()
 {
-	assert(patternCorners.size() == rotationVector.size());
-	assert(patternCorners.size() == translationVector.size());
-	assert(patternCorners.size() == imgCorners.size());
+    assert(patternCorners.size() == rotationVector.size());
+    assert(patternCorners.size() == translationVector.size());
+    assert(patternCorners.size() == imgCorners.size());
 
-	size_t idx = 0;
+    size_t idx = 0;
     int totalPoints = 0;
-	double totalErr = 0;
-	for(size_t i = 0; i < calibImages.size(); i++)
-	{
-		if(!calibImages[i].patternFound)
-			continue;
+    double totalErr = 0;
+    for (size_t i = 0; i < calibImages.size(); i++)
+    {
+        if (!calibImages[i].patternFound)
+            continue;
 
-	    std::vector<cv::Point2f> projectedPoints;
-        cv::projectPoints(cv::Mat(patternCorners[idx]), rotationVector[idx], translationVector[idx], calibrationMatrix, distortionCoefficients, projectedPoints);
+        std::vector<cv::Point2f> projectedPoints;
+        cv::projectPoints(cv::Mat(patternCorners[idx]), rotationVector[idx], translationVector[idx],
+                          calibrationMatrix, distortionCoefficients, projectedPoints);
 
         double error = 0;
         for (size_t j = 0; j < projectedPoints.size(); ++j)
@@ -284,28 +281,28 @@ double CameraCalibration::computeReprojectionError()
             const double x = projectedPoints[j].x - imgCorners[idx][j].x;
             const double y = projectedPoints[j].y - imgCorners[idx][j].y;
 
-            error += sqrt(x*x + y*y);
+            error += sqrt(x * x + y * y);
         }
 
-		totalErr += error;
+        totalErr += error;
 
-		calibImages[i].reprojectionError = error/patternCorners[idx].size();
-		totalPoints += (int)patternCorners[idx].size();
+        calibImages[i].reprojectionError = error / patternCorners[idx].size();
+        totalPoints += (int)patternCorners[idx].size();
 
-		idx++;
-	}
+        idx++;
+    }
 
-	if (totalPoints == 0)
-		return 0.0f;
+    if (totalPoints == 0)
+        return 0.0f;
 
-	return totalErr/totalPoints;
+    return totalErr / totalPoints;
 }
 
 double CameraCalibration::computeDistortUndistortError()
 {
     double error = 0;
-   
-    std::vector<cv::Point3d> points_Iu; 
+
+    std::vector<cv::Point3d> points_Iu;
     for (double i = -2; i <= 2; i += 0.1)
     {
         for (double j = -2; j <= 2; j += 0.1)
@@ -315,12 +312,12 @@ double CameraCalibration::computeDistortUndistortError()
     }
 
     cv::Mat rRod, tVec;
-    tVec = cv::Mat::zeros(3, 1,CV_64F);
-    cv::Rodrigues(cv::Mat::eye(3,3,CV_64F), rRod);
-   
+    tVec = cv::Mat::zeros(3, 1, CV_64F);
+    cv::Rodrigues(cv::Mat::eye(3, 3, CV_64F), rRod);
+
     std::vector<cv::Point2d> points_P;
     cv::projectPoints(points_Iu, rRod, tVec, calibrationMatrix, distortionCoefficients, points_P);
- 
+
     std::vector<cv::Point2d> points2_Iu;
     cv::undistort(points_P, points2_Iu, calibrationMatrix, distortionCoefficients);
 
@@ -331,52 +328,43 @@ double CameraCalibration::computeDistortUndistortError()
 
         error += sqrt(x * x + y * y);
     }
-    
+
     error /= points_Iu.size();
     return error;
 }
 
-const cv::Mat& CameraCalibration::getCameraMatrix() const
-{
-	return calibrationMatrix;
-}
+const cv::Mat& CameraCalibration::getCameraMatrix() const { return calibrationMatrix; }
 
-const cv::Mat& CameraCalibration::getDistCoeffs() const
-{
-	return distortionCoefficients;
-}
+const cv::Mat& CameraCalibration::getDistCoeffs() const { return distortionCoefficients; }
 
 std::vector<std::string> CameraCalibration::getFiles() const
 {
-	std::vector<std::string> files(calibImages.size());
-	for(size_t  i = 0; i < calibImages.size(); ++i)
-		files[i] = calibImages[i].filePath;
+    std::vector<std::string> files(calibImages.size());
+    for (size_t i = 0; i < calibImages.size(); ++i)
+        files[i] = calibImages[i].filePath;
 
-	return files;
+    return files;
 }
 
 void CameraCalibration::setFiles(const std::vector<std::string>& files)
 {
-	calibImages.resize(files.size());
-	for (size_t i = 0; i < calibImages.size(); ++i)
-	{
-		calibImages[i].filePath = files[i];
-		calibImages[i].patternFound = false;
-	}
+    calibImages.resize(files.size());
+    for (size_t i = 0; i < calibImages.size(); ++i)
+    {
+        calibImages[i].filePath = files[i];
+        calibImages[i].patternFound = false;
+    }
 }
 
 void CameraCalibration::addFile(const std::string& file)
 {
-	CalibImgInfo imgInfo;
-	imgInfo.patternFound = false;
+    CalibImgInfo imgInfo;
+    imgInfo.patternFound = false;
     imgInfo.filePath = file;
     calibImages.push_back(std::move(imgInfo));
 }
 
-void CameraCalibration::removeFile(int index)
-{
-	calibImages.erase(calibImages.begin() + index);
-}
+void CameraCalibration::removeFile(int index) { calibImages.erase(calibImages.begin() + index); }
 
 void CameraCalibration::clearFiles() { calibImages.clear(); }
 

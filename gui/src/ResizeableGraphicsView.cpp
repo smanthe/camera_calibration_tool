@@ -6,19 +6,15 @@
  */
 
 #include "ResizeableGraphicsView.h"
-ResizeableGraphicsView::ResizeableGraphicsView(QWidget *parent):
-	QGraphicsView(parent)
-{
-}
+ResizeableGraphicsView::ResizeableGraphicsView(QWidget* parent) : QGraphicsView(parent) {}
 
-ResizeableGraphicsView::~ResizeableGraphicsView()
-{
-}
+ResizeableGraphicsView::~ResizeableGraphicsView() {}
 
 void ResizeableGraphicsView::resizeEvent(QResizeEvent* event)
 {
-	QList<QGraphicsItem  *> list = this -> items();
-	for (int i = 0; i < list.size(); ++i) {
-		this->fitInView(list[i], Qt::KeepAspectRatio);
-	}
+    QList<QGraphicsItem*> list = this->items();
+    for (int i = 0; i < list.size(); ++i)
+    {
+        this->fitInView(list[i], Qt::KeepAspectRatio);
+    }
 }

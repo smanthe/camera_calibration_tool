@@ -4,19 +4,19 @@
  *  Created on: 30.12.2013
  *      Author: Stephan Manthe
  */
-  
-#include <QtGui>
-#include <QApplication>
+
 #include "CalibrationWidget.h"
+#include <QApplication>
+#include <QtGui>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	setenv("LC_ALL", "C", 1);
+    setenv("LC_ALL", "C", 1);
 
-	QApplication app(argc, argv);
-	CalibrationWidget calibWidget;
-	calibWidget.show();
-	calibWidget.raise();
+    QApplication app(argc, argv);
+    CalibrationWidget calibWidget;
+    calibWidget.show();
+    calibWidget.raise();
 
-	return app.exec();
+    return app.exec();
 }
