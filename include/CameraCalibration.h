@@ -45,13 +45,13 @@ public:
     /**
      * Stores the calculated camera parameters in opencv filestorage format.
      */
-    void saveCameraParameter(const std::string& filePath) const;
+    void saveCameraParameters(const std::string& filePath) const;
 
-    void exportCameraParameterCv(const std::string& filePath) const;
+    void exportCameraParametersCv(const std::string& filePath) const;
 
-    void exportCameraParameterJSON(const std::string& filePath) const;
+    void exportCameraParametersJSON(const std::string& filePath) const;
 
-    void exportCameraParameterROS(const std::string& filePath) const;
+    void exportCameraParametersROS(const std::string& filePath) const;
 
     /**
      * Computes the reprojection error of the last camera calibration.
@@ -63,9 +63,9 @@ public:
     /**
      * Loads camera parameters from a file which was created with cv::Filestorage.
      */
-    void loadCameraParameter(const std::string& filePath);
+    void loadCameraParametersXML(const std::string& filePath);
 
-    void loadCameraParameterJSON(const std::string& filePath);
+    void loadCameraParametersJSON(const std::string& filePath);
 
     const cv::Mat& getCameraMatrix() const;
     const cv::Mat& getDistCoeffs() const;

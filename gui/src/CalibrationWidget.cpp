@@ -193,7 +193,7 @@ void CalibrationWidget::doCalibration(const QString& filePath,
     if (calibTool.isStopRequested())
         return;
 
-    calibTool.saveCameraParameter(filePath.toStdString());
+    calibTool.saveCameraParameters(filePath.toStdString());
     const std::vector<libba::CameraCalibration::CalibImgInfo> imgs = calibTool.getCalibInfo();
 
     // update the imagemodel
@@ -227,10 +227,8 @@ void CalibrationWidget::stopCalibration()
         calibrationFuture.waitForFinished();
     }
     else
-    {
         QMessageBox::information(this, trUtf8("Kalibrierung abgeschlossen"),
                                  trUtf8("Das Kalibrieren der Kamera ist abegschlossen."));
-    }
 
     calibrationRunning = false;
     imgModel->setCheckboxesEnabled(true);
@@ -434,9 +432,9 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
         throw std::runtime_error("Path does not match the pattern.");
 
     if (match_result[0] == ".json")
-        calibTool.loadCameraParameterJSON(filePath.toStdString());
+        calibTool.loadCameraParametersJSON(filePath.toStdString());
     else if (match_result[0] == ".xml")
-        calibTool.loadCameraParameter(filePath.toStdString());
+        calibTool.loadCameraParametersXML(filePath.toStdString());
     else
         return;
 

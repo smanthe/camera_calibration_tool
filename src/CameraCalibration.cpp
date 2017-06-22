@@ -6,9 +6,9 @@
  */
 
 #include "CameraCalibration.h"
+#include "json.hpp"
 #include <boost/filesystem.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <fstream>
 #include <stdexcept>
 
 namespace libba
@@ -23,9 +23,9 @@ CameraCalibration::CameraCalibration()
       calibDataAvailabel(false)
 {
 }
-
+//-------------------------------------------------------------------------------------------------
 CameraCalibration::~CameraCalibration() {}
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string)> statusFunc)
 {
     stopRequested = false;
@@ -152,18 +152,18 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
     // computeDistortUndistortError(); // TODO Display this error inside of the gui
     calibDataAvailabel = true;
 }
-
-void CameraCalibration::saveCameraParameter(const std::string& filePath) const
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::saveCameraParameters(const std::string& filePath) const
 {
     namespace fs = boost::filesystem;
     const auto extension = fs::path(filePath).extension().string();
     if (extension == ".xml")
-        exportCameraParameterCv(filePath);
+        exportCameraParametersCv(filePath);
     else if (extension == ".json")
-        exportCameraParameterJSON(filePath);
+        exportCameraParametersJSON(filePath);
 }
-
-void CameraCalibration::exportCameraParameterCv(const std::string& filePath) const
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::exportCameraParametersCv(const std::string& filePath) const
 {
     cv::FileStorage fs(filePath, cv::FileStorage::WRITE); // Read the settings
     if (!fs.isOpened())
@@ -183,56 +183,52 @@ void CameraCalibration::exportCameraParameterCv(const std::string& filePath) con
 
     fs.release();
 }
-
-void CameraCalibration::exportCameraParameterJSON(const std::string& filePath) const
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::exportCameraParametersJSON(const std::string& filePath) const
 {
-    namespace pt = boost::property_tree;
-    pt::ptree root;
-    root.put("fx", calibrationMatrix.at<double>(0, 0));
-    root.put("fy", calibrationMatrix.at<double>(1, 1));
-    root.put("cx", calibrationMatrix.at<double>(0, 2));
-    root.put("cy", calibrationMatrix.at<double>(1, 2));
-    pt::ptree distortionCoefficientsPt = matrix2PropertyTreeCv<double>(distortionCoefficients);
-    root.add_child("distortion_coefficients", distortionCoefficientsPt);
-    root.put("vertical_resolution", imageSize.height);
-    root.put("horizontal_resolution", imageSize.width);
-    root.put("reprojection_error", reprojectionError);
-    pt::write_json(filePath, root);
+    std::cout << "bin da" << std::endl;
+    nlohmann::json camJson;
+    camJson["fx"] = calibrationMatrix.at<double>(0, 0);
+    camJson["fy"] = calibrationMatrix.at<double>(1, 1);
+    camJson["cx"] = calibrationMatrix.at<double>(0, 2);
+    camJson["cy"] = calibrationMatrix.at<double>(1, 2);
+    camJson["horizontal_resolution"] = imageSize.width;
+    camJson["vertical_resolution"] = imageSize.height;
+    camJson["distortion_coefficients"] = nlohmann::json::array();
+
+    for (size_t i = 0; i < distortionCoefficients.rows; ++i)
+        camJson["distortion_coefficients"].push_back(distortionCoefficients.at<double>(i, 0));
+
+    std::ofstream outStream(filePath);
+    outStream << std::setw(4) << camJson << std::endl;
 }
-void CameraCalibration::loadCameraParameterJSON(const std::string& filePath)
-{
-    namespace pt = boost::property_tree;
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::loadCameraParametersJSON(const std::string& filePath)
+{    
+    std::ifstream inFileStram(filePath);
+    nlohmann::json camJson;
+    inFileStram >> camJson;
+
     calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
+    calibrationMatrix.at<double>(0, 0) = camJson.at("fx").get<double>();
+    calibrationMatrix.at<double>(1, 1) = camJson.at("fy").get<double>();
+    calibrationMatrix.at<double>(0, 2) = camJson.at("cx").get<double>();
+    calibrationMatrix.at<double>(1, 2) = camJson.at("cy").get<double>();
 
-    pt::ptree ptree;
-    pt::read_json(filePath, ptree);
+    imageSize.width = camJson.at("horizontal_resolution").get<int>();
+    imageSize.height = camJson.at("vertical_resolution").get<int>();
 
-    calibrationMatrix.at<double>(0, 0) = ptree.get<double>("fx");
-    calibrationMatrix.at<double>(1, 1) = ptree.get<double>("fy");
-    calibrationMatrix.at<double>(0, 2) = ptree.get<double>("cx");
-    calibrationMatrix.at<double>(1, 2) = ptree.get<double>("cy");
-
-    const pt::ptree distPtree = ptree.get_child("distortion_coefficients");
-    const pt::ptree coefficentsPtree = distPtree.get_child("coefficents");
-
-    const int rows = distPtree.get<int>("rows");
+    const size_t rows = camJson["distortion_coefficients"].size();
     distortionCoefficients = cv::Mat::zeros(rows, 1, CV_64F);
-    int i = 0;
-    for (const auto& c : coefficentsPtree)
-    {
-        distortionCoefficients.at<double>(i, 0) = c.second.get_value<double>();
-        i++;
-    }
-
-    imageSize.width = ptree.get<int>("horizontal_resolution");
-    imageSize.height = ptree.get<int>("vertical_resolution");
+    for (size_t i = 0; i < rows; ++i)
+        distortionCoefficients.at<double>(i, 0) = camJson["distortion_coefficients"][i];
 
     calibDataAvailabel = true;
 }
-
-void CameraCalibration::exportCameraParameterROS(const std::string& filePath) const {}
-
-void CameraCalibration::loadCameraParameter(const std::string& filePath)
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::exportCameraParametersROS(const std::string& filePath) const {}
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::loadCameraParametersXML(const std::string& filePath)
 {
     cv::FileStorage fs(filePath, cv::FileStorage::READ); // Read the settings
     if (!fs.isOpened())
@@ -256,7 +252,7 @@ void CameraCalibration::loadCameraParameter(const std::string& filePath)
 
     fs.release();
 }
-
+//-------------------------------------------------------------------------------------------------
 double CameraCalibration::computeReprojectionError()
 {
     assert(patternCorners.size() == rotationVector.size());
@@ -297,7 +293,7 @@ double CameraCalibration::computeReprojectionError()
 
     return totalErr / totalPoints;
 }
-
+//-------------------------------------------------------------------------------------------------
 double CameraCalibration::computeDistortUndistortError()
 {
     double error = 0;
@@ -332,11 +328,11 @@ double CameraCalibration::computeDistortUndistortError()
     error /= points_Iu.size();
     return error;
 }
-
+//-------------------------------------------------------------------------------------------------
 const cv::Mat& CameraCalibration::getCameraMatrix() const { return calibrationMatrix; }
-
+//-------------------------------------------------------------------------------------------------
 const cv::Mat& CameraCalibration::getDistCoeffs() const { return distortionCoefficients; }
-
+//-------------------------------------------------------------------------------------------------
 std::vector<std::string> CameraCalibration::getFiles() const
 {
     std::vector<std::string> files(calibImages.size());
@@ -345,7 +341,7 @@ std::vector<std::string> CameraCalibration::getFiles() const
 
     return files;
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::setFiles(const std::vector<std::string>& files)
 {
     calibImages.resize(files.size());
@@ -355,7 +351,7 @@ void CameraCalibration::setFiles(const std::vector<std::string>& files)
         calibImages[i].patternFound = false;
     }
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::addFile(const std::string& file)
 {
     CalibImgInfo imgInfo;
@@ -363,39 +359,40 @@ void CameraCalibration::addFile(const std::string& file)
     imgInfo.filePath = file;
     calibImages.push_back(std::move(imgInfo));
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::removeFile(int index) { calibImages.erase(calibImages.begin() + index); }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::clearFiles() { calibImages.clear(); }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::setChessboardSize(const cv::Size2i& chessboardSize)
 {
     this->chessboardCorners = chessboardSize;
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRefinmentWindowSize)
 {
     this->cornerRefinmentWindowSize = cornerRefinmentWindowSize;
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::setChessboardSquareWidth(float chessboardSquareWidth)
 {
     this->chessboardSquareWidth = chessboardSquareWidth;
 }
-
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::stopCalibration() { stopRequested = true; }
-
+//-------------------------------------------------------------------------------------------------
 bool CameraCalibration::isStopRequested() const { return stopRequested; }
-
+//-------------------------------------------------------------------------------------------------
 float CameraCalibration::getReprojectionError() const { return reprojectionError; }
-
+//-------------------------------------------------------------------------------------------------
 const std::vector<CameraCalibration::CalibImgInfo>& CameraCalibration::getCalibInfo() const
 {
     return calibImages;
 }
-
+//-------------------------------------------------------------------------------------------------
 bool CameraCalibration::isCalibrationDataAvailable() const { return this->calibDataAvailabel; }
-
+//-------------------------------------------------------------------------------------------------
 cv::Size2i CameraCalibration::getChessboardSize() const { return chessboardCorners; }
+//-------------------------------------------------------------------------------------------------
 float CameraCalibration::getChessboardSquareWidth() const { return chessboardSquareWidth; }
 }
