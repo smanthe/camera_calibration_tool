@@ -26,7 +26,7 @@ CameraCalibration::CameraCalibration()
 //-------------------------------------------------------------------------------------------------
 CameraCalibration::~CameraCalibration() {}
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string)> statusFunc)
+void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string)> progressFunc, int calibrationFlags)
 {
     stopRequested = false;
     calibDataAvailabel = false;
@@ -88,7 +88,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
         if (!patternFound)
         {
             calibImages[i].patternFound = false;
-            statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+            progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
             continue;
         }
 
@@ -109,7 +109,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
                 catch (cv::Exception& e)
                 {
                     calibImages[i].patternFound = false;
-                    statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+                    progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
 
                     std::cout << "OpenCV exception for image " << i
                               << " in find4QuadCornerSubpix : " << e.what() << std::endl;
@@ -127,7 +127,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
         imgCorners.push_back(std::move(cornersTemp));
         patternCorners.push_back(chessboardCorners3d);
 
-        statusFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+        progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
     }
 
     try
@@ -135,13 +135,12 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
         calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
         distortionCoefficients = cv::Mat::zeros(12, 1, CV_64F);
         // TODO Show this option at the gui
-        // const int flags = CV_CALIB_RATIONAL_MODEL;
-        // cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
-        // distortionCoefficients, rotationVector, translationVector, flags);
+        //  cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
+        //  distortionCoefficients, rotationVector, translationVector, flags);
         cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
                             distortionCoefficients, rotationVector, translationVector);
         currentStep++;
-        statusFunc(currentStep, maxNumberSteps, "");
+        progressFunc(currentStep, maxNumberSteps, "");
     }
     catch (const cv::Exception& ex)
     {

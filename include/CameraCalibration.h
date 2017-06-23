@@ -34,8 +34,9 @@ public:
 
     /**
      * Executes the camera calibration with the current files.
+     * @param statusFunc A function which is called if the progress changes.
      */
-    void calibrateCamera(std::function<void(int, int, std::string)> statusFunc);
+    void calibrateCamera(std::function<void(int, int, std::string)> progressFunc, int calibrationFlags);
 
     /**
      * Stops the calibration.
@@ -158,28 +159,6 @@ protected:
      * Indicates if calibration data is available.
      */
     bool calibDataAvailabel;
-
-    template <typename T>
-    boost::property_tree::ptree matrix2PropertyTreeCv(const cv::Mat& matrix) const
-    {
-        namespace pt = boost::property_tree;
-        pt::ptree tree;
-
-        tree.put("rows", matrix.rows);
-        tree.put("cols", matrix.cols);
-
-        pt::ptree coefficents;
-        for (int i = 0; i < matrix.rows; ++i)
-            for (int j = 0; j < matrix.cols; ++j)
-            {
-                pt::ptree coefficent;
-                coefficent.put("", matrix.at<T>(i, j));
-                coefficents.push_back(std::make_pair("", coefficent));
-            }
-
-        tree.add_child("coefficents", coefficents);
-        return tree;
-    }
 };
 }
 

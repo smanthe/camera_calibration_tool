@@ -31,13 +31,13 @@ CalibrationWidget::CalibrationWidget(QWidget* parent)
     setupUi();
     connectSignalsAndSlots();
 }
-
+//------------------------------------------------------------------------------------------------
 CalibrationWidget::~CalibrationWidget()
 {
     if (calibrationRunning)
         stopCalibration();
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_kalibrieren_clicked()
 {
     // calibration is already running --> stop it
@@ -47,7 +47,7 @@ void CalibrationWidget::on_pushButton_kalibrieren_clicked()
     else
         startCalibration();
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::startCalibration()
 {
     // Read settings
@@ -164,7 +164,7 @@ void CalibrationWidget::startCalibration()
         QtConcurrent::run(this, &CalibrationWidget::doCalibration, filePath, filePathModelIndices);
     calibrationRunning = true;
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::doCalibration(const QString& filePath,
                                       const std::vector<int>& filePathModelIndices)
 {
@@ -172,7 +172,8 @@ void CalibrationWidget::doCalibration(const QString& filePath,
     auto f = std::bind(&ProgressState::emitSignals, calibrationState, pl::_1, pl::_2, pl::_3);
     try
     {
-        calibTool.calibrateCamera(f);
+        const int index = this->widget->comboBox_distortionModel->currentIndex();
+        calibTool.calibrateCamera(f, cv::CALIB_RATIONAL_MODEL);
     }
     catch (const std::runtime_error& e)
     {
@@ -212,7 +213,7 @@ void CalibrationWidget::doCalibration(const QString& filePath,
     // different threads
     emit calibrationDone();
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::stopCalibration()
 {
     calibTool.stopCalibration();
@@ -238,16 +239,16 @@ void CalibrationWidget::stopCalibration()
     widget->progressBar->setValue(0);
     enableButtons();
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_loeschen_clicked()
 {
     QModelIndex i = widget->tableView_images->currentIndex();
     widget->tableView_images->model()->removeRow(i.row(), QModelIndex());
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_hinzufuegen_clicked()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(),
+    const QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(),
                                                     trUtf8("Images (*.png *.jpg)"));
 
     if (filePath == "")
@@ -255,10 +256,10 @@ void CalibrationWidget::on_pushButton_hinzufuegen_clicked()
 
     imgModel->addImage(filePath);
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_ordnerHinzufuegen_clicked()
 {
-    QString dirPath = QFileDialog::getExistingDirectory(
+    const QString dirPath = QFileDialog::getExistingDirectory(
         this, trUtf8("Ordner öffnen"), QDir::homePath(), QFileDialog::ShowDirsOnly);
     const std::regex filter(".*\\.JPG|.*\\.PNG|.*\\.jpg||.*\\.png", std::regex::icase);
     std::vector<std::string> files = libba::readFilesFromDir(dirPath.toStdString(), filter);
@@ -268,7 +269,7 @@ void CalibrationWidget::on_pushButton_ordnerHinzufuegen_clicked()
         imgModel->addImage(QString::fromStdString(files[i]));
     }
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::setupUi()
 {
     widget->setupUi(this);
@@ -302,7 +303,7 @@ void CalibrationWidget::setupUi()
 
     calibrationState = new ProgressState(widget->progressBar);
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::showImage(const QModelIndex& index)
 {
     QGraphicsScene* scene = widget->graphicsView->scene();
@@ -393,7 +394,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
     widget->graphicsView->fitInView(currentImage, Qt::KeepAspectRatio);
     scene->addItem(currentImage);
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 {
     if (!success)
@@ -418,7 +419,7 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
     widget->label_reprojectionError->setText(
         QString::number(calibTool.getReprojectionError(), 'g', 4));
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(),
@@ -428,7 +429,8 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 
     std::smatch match_result;
     std::regex pattern("\\.(json|xml)?$");
-    if (!std::regex_search(filePath.toStdString(), match_result, pattern))
+    const std::string tmpStr = filePath.toStdString();
+    if (!std::regex_search(tmpStr, match_result, pattern))
         throw std::runtime_error("Path does not match the pattern.");
 
     if (match_result[0] == ".json")
@@ -440,14 +442,14 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 
     updateResults();
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_comboBox_ansicht_currentIndexChanged(int index)
 {
     const QModelIndex i = widget->tableView_images->currentIndex();
     if (i.isValid())
         showImage(i);
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::connectSignalsAndSlots()
 {
     connect(widget->tableView_images, SIGNAL(pressed(const QModelIndex&)), this,
@@ -457,13 +459,13 @@ void CalibrationWidget::connectSignalsAndSlots()
     connect(imgModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this->imgModel,
             SLOT(rowsRemoved(const QModelIndex&, int, int)));
 }
-
+//------------------------------------------------------------------------------------------------
 void CalibrationWidget::closeEvent(QCloseEvent* event)
 {
     if (calibrationRunning)
         stopCalibration();
 }
-
+//-------------------------------------------------------------------------------------------------
 void CalibrationWidget::enableButtons()
 {
     this->widget->pushButton_loeschen->setDisabled(false);
@@ -471,7 +473,7 @@ void CalibrationWidget::enableButtons()
     this->widget->pushButton_hinzufuegen->setDisabled(false);
     this->widget->pushButton_kalibrierdatenLaden->setDisabled(false);
 }
-
+//-------------------------------------------------------------------------------------------------
 void CalibrationWidget::disableButtons()
 {
     this->widget->pushButton_loeschen->setDisabled(true);
