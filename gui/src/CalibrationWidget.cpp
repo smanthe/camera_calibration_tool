@@ -344,7 +344,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
 
         if (img.isNull())
         {
-            errorDialog->setText(trUtf8("Das Bild konnte für die Vorschau nicht geöffnet werden."));
+            errorDialog->setText(trUtf8("Das Bild konnte nicht geöffnet werden."));
             errorDialog->show();
             return;
         }
@@ -382,9 +382,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
         try
         {
             if (!imgModel->getImageData(index.row()).found)
-            {
                 currentImage = new QGraphicsPixmapItem(0);
-            }
             else
             {
                 cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);

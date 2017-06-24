@@ -43,8 +43,8 @@ std::vector<std::string> readFilesFromDir(
     }
     return files;
 }
-
-std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle, int precision)
+//------------------------------------------------------------------------------------------------
+std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle, const int precision)
 {
     if (matrix.empty())
         return "";
