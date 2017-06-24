@@ -12,21 +12,21 @@
 
 class QProgressBar;
 
-class ProgressState:public QObject
+class ProgressState : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ProgressState();
-	virtual ~ProgressState();
-	QProgressBar *progBar;
+    ProgressState();
+    virtual ~ProgressState();
+    QProgressBar* progBar;
 
-	ProgressState(QProgressBar* pBar, QObject* parent = 0);
+    ProgressState(QProgressBar* pBar, QObject* parent = 0);
 
-	void emitSignals(int currentStep, int maxSteps, std::string fileName);
+    void emitSignals(int currentStep, int maxSteps, std::string fileName);
 
 signals:
-		void setValue(int );
-		void setRange(int, int );
+    void setValue(int);
+    void setRange(int, int);
 };
 
 #endif /* PROGRESSSTATE_H_ */
