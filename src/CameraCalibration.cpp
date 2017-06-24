@@ -191,7 +191,7 @@ void CameraCalibration::exportCameraParametersJSON(const std::string& filePath) 
     camJson["vertical_resolution"] = imageSize.height;
 
     camJson["distortion_coefficients"] = nlohmann::json::array();
-    for (size_t i = 0; i < distortionCoefficients.rows; ++i)
+    for (size_t i = 0; i < getNumDistortionCoefficents(); ++i)
         camJson["distortion_coefficients"].push_back(distortionCoefficients.at<double>(i, 0));
 
     camJson["reprojection_error"] = reprojectionError;
@@ -220,6 +220,7 @@ void CameraCalibration::loadCameraParametersJSON(const std::string& filePath)
     for (size_t i = 0; i < rows; ++i)
         distortionCoefficients.at<double>(i, 0) = camJson["distortion_coefficients"][i];
 
+    reprojectionError = camJson.at("reprojection_error").get<double>();
     calibDataAvailabel = true;
 }
 //-------------------------------------------------------------------------------------------------
@@ -331,6 +332,14 @@ const cv::Mat& CameraCalibration::getDistCoeffs() const
     return distortionCoefficients;
 }
 //-------------------------------------------------------------------------------------------------
+size_t CameraCalibration::getNumDistortionCoefficents() const
+{
+    if (calibrationFlags & cv::CALIB_RATIONAL_MODEL)
+        return 8;
+    else
+        return 5;
+}
+//-------------------------------------------------------------------------------------------------
 std::vector<std::string> CameraCalibration::getFiles() const
 {
     std::vector<std::string> files(calibImages.size());
@@ -358,6 +367,11 @@ void CameraCalibration::addFile(const std::string& file)
     calibImages.push_back(std::move(imgInfo));
 }
 //-------------------------------------------------------------------------------------------------
+void CameraCalibration::stopCalibration()
+{
+    stopRequested = true;
+}
+//-------------------------------------------------------------------------------------------------
 void CameraCalibration::removeFile(int index)
 {
     calibImages.erase(calibImages.begin() + index);
@@ -381,11 +395,6 @@ void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRef
 void CameraCalibration::setChessboardSquareWidth(float chessboardSquareWidth)
 {
     this->chessboardSquareWidth = chessboardSquareWidth;
-}
-//-------------------------------------------------------------------------------------------------
-void CameraCalibration::stopCalibration()
-{
-    stopRequested = true;
 }
 //-------------------------------------------------------------------------------------------------
 bool CameraCalibration::isStopRequested() const

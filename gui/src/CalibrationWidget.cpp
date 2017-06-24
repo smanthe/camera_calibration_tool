@@ -193,7 +193,6 @@ void CalibrationWidget::doCalibration(
     try
     {
         const int index = this->widget->comboBox_distortionModel->currentIndex();
-        std::cout << "[index]: " << index << std::endl;
         calibTool.calibrateCamera(f);
     }
     catch (const std::runtime_error& e)

@@ -68,6 +68,11 @@ public:
 
     const cv::Mat& getCameraMatrix() const;
     const cv::Mat& getDistCoeffs() const;
+
+    /**
+     * Returns the number of distortion coefficents for a specific distortion model.
+     */
+    size_t getNumDistortionCoefficents() const;
     std::vector<std::string> getFiles() const;
 
     void setFiles(const std::vector<std::string>& files);
@@ -80,6 +85,7 @@ public:
     void setChessboardSquareWidth(float chessboardSquareWidth);
     bool isStopRequested() const;
     float getReprojectionError() const;
+
 
     const std::vector<CalibImgInfo>& getCalibInfo() const;
     bool isCalibrationDataAvailable() const;
@@ -163,7 +169,7 @@ protected:
     /**
      * Flags that are passed to the function cv::calibrateCamera .
      */
-    int calibrationFlags;
+    size_t calibrationFlags;
 };
 }
 
