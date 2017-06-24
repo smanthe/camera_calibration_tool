@@ -192,7 +192,6 @@ void CalibrationWidget::doCalibration(
     auto f = std::bind(&ProgressState::emitSignals, calibrationState, pl::_1, pl::_2, pl::_3);
     try
     {
-        const int index = this->widget->comboBox_distortionModel->currentIndex();
         calibTool.calibrateCamera(f);
     }
     catch (const std::runtime_error& e)
@@ -283,10 +282,8 @@ void CalibrationWidget::on_pushButton_ordnerHinzufuegen_clicked()
     const std::regex filter(".*\\.JPG|.*\\.PNG|.*\\.jpg||.*\\.png", std::regex::icase);
     std::vector<std::string> files = libba::readFilesFromDir(dirPath.toStdString(), filter);
 
-    for (int i = 0; i < files.size(); ++i)
-    {
-        imgModel->addImage(QString::fromStdString(files[i]));
-    }
+    for (const auto& file : files)
+        imgModel->addImage(QString::fromStdString(file));
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::setupUi()
@@ -301,7 +298,7 @@ void CalibrationWidget::setupUi()
     widget->lineEdit_cornerRefinmentWindowSizeVertical->setValidator(qiv2);
     widget->lineEdit_cornerRefinmentWindowSizeHorizontal->setValidator(qiv2);
 
-    QDoubleValidator* qdv = new QDoubleValidator(0, 9999999999999, 10, this);
+    QDoubleValidator* qdv = new QDoubleValidator(0, std::numeric_limits<double>::max(), 10, this);
     widget->lineEdit_quadratGroesse->setValidator(qdv);
 
     errorDialog = new QMessageBox(
