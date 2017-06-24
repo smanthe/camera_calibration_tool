@@ -52,8 +52,6 @@ public:
 
     void exportCameraParametersJSON(const std::string& filePath) const;
 
-    void exportCameraParametersROS(const std::string& filePath) const;
-
     /**
      * Computes the reprojection error of the last camera calibration.
      */
