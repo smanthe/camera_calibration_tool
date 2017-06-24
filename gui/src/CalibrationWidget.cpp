@@ -153,7 +153,7 @@ void CalibrationWidget::startCalibration()
     calibTool.setCornerRefinmentWindowSize(
         cv::Size2i(cornerRefinmentWindowSizeHorizontal, cornerRefinmentWindowSizeVertical));
 
-    int calibrationFlags = 0; 
+    int calibrationFlags = 0;
     const int distortionModelIndex = this->widget->comboBox_distortionModel->currentIndex();
     switch (distortionModelIndex)
     {
