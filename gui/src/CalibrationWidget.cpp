@@ -40,11 +40,9 @@ CalibrationWidget::~CalibrationWidget()
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_kalibrieren_clicked()
 {
-    // calibration is already running --> stop it
-    if (calibrationRunning)
+    if (calibrationRunning) // calibration is already running --> stop it
         stopCalibration();
-    // calibration is not running --> start it
-    else
+    else // calibration is not running --> start it
         startCalibration();
 }
 //------------------------------------------------------------------------------------------------
@@ -422,9 +420,60 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 
     widget->label_cameraMatrix->setText(QString::fromStdString(tableHTML));
 
-    cv::Mat transpDistCoefs = calibTool.getDistCoeffs().clone();
-    cv::transpose(transpDistCoefs, transpDistCoefs);
-    tableHTML = libba::matrixToHTML(transpDistCoefs, tableStyle, precision);
+ 
+    tableHTML = "<table cellpadding=\"2\">";
+    for (size_t i = 0; i < calibTool.getNumDistortionCoefficents(); ++i)
+    {
+        std::string label = "";
+        switch (i)
+        {
+        case 0:
+        {
+            label = "kappa1";
+            break;
+        }
+        case 1:
+        {
+            label = "kappa2";
+            break;
+        }
+        case 2:
+        {
+            label = "p1";
+            break;
+        }
+        case 3:
+        {
+            label = "p2";
+            break;
+        }
+        case 4:
+        {
+            label = "kappa3";
+            break;
+        }
+        case 5:
+        {
+            label = "kappa4";
+            break;
+        }
+        case 6:
+        {
+            label = "kappa5";
+            break;
+        }
+        case 7:
+        {
+            label = "kappa6";
+            break;
+        }
+        }
+        label += ":";
+        tableHTML += "<tr><td>" + label + "</td><td>"
+            + std::to_string(calibTool.getDistCoeffs().at<double>(i)) + "</td></tr>";
+    }
+
+    tableHTML += "</table>";
     widget->label_distoritionCoefficents->setText(QString::fromStdString(tableHTML));
 
     widget->label_reprojectionError->setText(

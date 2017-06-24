@@ -79,7 +79,6 @@ std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle, co
         stream << "</tr>";
     }
     stream << "</table>";
-
     return stream.str();
 }
 }
