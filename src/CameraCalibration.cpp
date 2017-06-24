@@ -223,10 +223,6 @@ void CameraCalibration::loadCameraParametersJSON(const std::string& filePath)
     calibDataAvailabel = true;
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::exportCameraParametersROS(const std::string& filePath) const
-{
-}
-//-------------------------------------------------------------------------------------------------
 void CameraCalibration::loadCameraParametersXML(const std::string& filePath)
 {
     cv::FileStorage fs(filePath, cv::FileStorage::READ); // Read the settings
