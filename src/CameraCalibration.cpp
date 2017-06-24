@@ -15,18 +15,21 @@ namespace libba
 {
 
 CameraCalibration::CameraCalibration()
-    : chessboardCorners(7, 6),
-      cornerRefinmentWindowSize(10, 10),
-      chessboardSquareWidth(0.06),
-      stopRequested(false),
-      reprojectionError(0),
-      calibDataAvailabel(false)
+    : chessboardCorners(7, 6)
+    , cornerRefinmentWindowSize(10, 10)
+    , chessboardSquareWidth(0.06)
+    , stopRequested(false)
+    , reprojectionError(0)
+    , calibDataAvailabel(false)
 {
 }
 //-------------------------------------------------------------------------------------------------
-CameraCalibration::~CameraCalibration() {}
+CameraCalibration::~CameraCalibration()
+{
+}
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string)> progressFunc, int calibrationFlags)
+void CameraCalibration::calibrateCamera(
+    const std::function<void(int, int, std::string)> progressFunc, const int calibrationFlags)
 {
     stopRequested = false;
     calibDataAvailabel = false;
@@ -40,8 +43,8 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
     std::vector<cv::Point3f> chessboardCorners3d;
     for (int i = 0; i < chessboardCorners.height; ++i)
         for (int j = 0; j < chessboardCorners.width; ++j)
-            chessboardCorners3d.emplace_back(float(j * chessboardSquareWidth),
-                                             float(i * chessboardSquareWidth), 0);
+            chessboardCorners3d.emplace_back(
+                float(j * chessboardSquareWidth), float(i * chessboardSquareWidth), 0);
 
     if (calibImages.size() == 0)
         throw std::runtime_error("No images for calibration provided.");
@@ -68,19 +71,18 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
 
         if (img.cols != imageSize.width || img.rows != imageSize.height)
         {
-            std::string errorMsg =
-                "This image had the wrong size for the calibration: " + calibImages[i].filePath;
-            errorMsg += " expected: " + std::to_string(imageSize.width) + "x" +
-                        std::to_string(imageSize.height);
+            std::string errorMsg
+                = "This image had the wrong size for the calibration: " + calibImages[i].filePath;
+            errorMsg += " expected: " + std::to_string(imageSize.width) + "x"
+                + std::to_string(imageSize.height);
             errorMsg += " img: " + std::to_string(img.cols) + "x" + std::to_string(img.rows);
             std::cerr << errorMsg << std::endl;
             throw std::runtime_error(errorMsg);
         }
 
         std::vector<cv::Point2f> cornersTemp;
-        bool patternFound =
-            cv::findChessboardCorners(img, chessboardCorners, cornersTemp,
-                                      CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+        bool patternFound = cv::findChessboardCorners(img, chessboardCorners, cornersTemp,
+            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
         if (stopRequested)
             return;
@@ -98,7 +100,7 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
             if (true)
             {
                 cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
-                                 cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+                    cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
             }
             else
             {
@@ -134,11 +136,8 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
     {
         calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
         distortionCoefficients = cv::Mat::zeros(12, 1, CV_64F);
-        // TODO Show this option at the gui
-        //  cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
-        //  distortionCoefficients, rotationVector, translationVector, flags);
         cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
-                            distortionCoefficients, rotationVector, translationVector);
+            distortionCoefficients, rotationVector, translationVector, calibrationFlags);
         currentStep++;
         progressFunc(currentStep, maxNumberSteps, "");
     }
@@ -148,7 +147,8 @@ void CameraCalibration::calibrateCamera(std::function<void(int, int, std::string
     }
 
     reprojectionError = computeReprojectionError();
-    // computeDistortUndistortError(); // TODO Display this error inside of the gui
+    // computeDistortUndistortError(); // TODO Display this error inside of the
+    // gui
     calibDataAvailabel = true;
 }
 //-------------------------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ void CameraCalibration::exportCameraParametersJSON(const std::string& filePath) 
 }
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::loadCameraParametersJSON(const std::string& filePath)
-{    
+{
     std::ifstream inFileStram(filePath);
     nlohmann::json camJson;
     inFileStram >> camJson;
@@ -225,7 +225,9 @@ void CameraCalibration::loadCameraParametersJSON(const std::string& filePath)
     calibDataAvailabel = true;
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::exportCameraParametersROS(const std::string& filePath) const {}
+void CameraCalibration::exportCameraParametersROS(const std::string& filePath) const
+{
+}
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::loadCameraParametersXML(const std::string& filePath)
 {
@@ -268,7 +270,7 @@ double CameraCalibration::computeReprojectionError()
 
         std::vector<cv::Point2f> projectedPoints;
         cv::projectPoints(cv::Mat(patternCorners[idx]), rotationVector[idx], translationVector[idx],
-                          calibrationMatrix, distortionCoefficients, projectedPoints);
+            calibrationMatrix, distortionCoefficients, projectedPoints);
 
         double error = 0;
         for (size_t j = 0; j < projectedPoints.size(); ++j)
@@ -328,9 +330,15 @@ double CameraCalibration::computeDistortUndistortError()
     return error;
 }
 //-------------------------------------------------------------------------------------------------
-const cv::Mat& CameraCalibration::getCameraMatrix() const { return calibrationMatrix; }
+const cv::Mat& CameraCalibration::getCameraMatrix() const
+{
+    return calibrationMatrix;
+}
 //-------------------------------------------------------------------------------------------------
-const cv::Mat& CameraCalibration::getDistCoeffs() const { return distortionCoefficients; }
+const cv::Mat& CameraCalibration::getDistCoeffs() const
+{
+    return distortionCoefficients;
+}
 //-------------------------------------------------------------------------------------------------
 std::vector<std::string> CameraCalibration::getFiles() const
 {
@@ -359,9 +367,15 @@ void CameraCalibration::addFile(const std::string& file)
     calibImages.push_back(std::move(imgInfo));
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::removeFile(int index) { calibImages.erase(calibImages.begin() + index); }
+void CameraCalibration::removeFile(int index)
+{
+    calibImages.erase(calibImages.begin() + index);
+}
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::clearFiles() { calibImages.clear(); }
+void CameraCalibration::clearFiles()
+{
+    calibImages.clear();
+}
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::setChessboardSize(const cv::Size2i& chessboardSize)
 {
@@ -378,20 +392,38 @@ void CameraCalibration::setChessboardSquareWidth(float chessboardSquareWidth)
     this->chessboardSquareWidth = chessboardSquareWidth;
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::stopCalibration() { stopRequested = true; }
+void CameraCalibration::stopCalibration()
+{
+    stopRequested = true;
+}
 //-------------------------------------------------------------------------------------------------
-bool CameraCalibration::isStopRequested() const { return stopRequested; }
+bool CameraCalibration::isStopRequested() const
+{
+    return stopRequested;
+}
 //-------------------------------------------------------------------------------------------------
-float CameraCalibration::getReprojectionError() const { return reprojectionError; }
+float CameraCalibration::getReprojectionError() const
+{
+    return reprojectionError;
+}
 //-------------------------------------------------------------------------------------------------
 const std::vector<CameraCalibration::CalibImgInfo>& CameraCalibration::getCalibInfo() const
 {
     return calibImages;
 }
 //-------------------------------------------------------------------------------------------------
-bool CameraCalibration::isCalibrationDataAvailable() const { return this->calibDataAvailabel; }
+bool CameraCalibration::isCalibrationDataAvailable() const
+{
+    return this->calibDataAvailabel;
+}
 //-------------------------------------------------------------------------------------------------
-cv::Size2i CameraCalibration::getChessboardSize() const { return chessboardCorners; }
+cv::Size2i CameraCalibration::getChessboardSize() const
+{
+    return chessboardCorners;
+}
 //-------------------------------------------------------------------------------------------------
-float CameraCalibration::getChessboardSquareWidth() const { return chessboardSquareWidth; }
+float CameraCalibration::getChessboardSquareWidth() const
+{
+    return chessboardSquareWidth;
+}
 }

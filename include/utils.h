@@ -18,14 +18,14 @@ namespace libba
 /**
  * Returns all filepaths from a specified directory.
  */
-std::vector<std::string> readFilesFromDir(const std::string& dirPath,
-                                          const std::regex& extensionFilter);
+std::vector<std::string> readFilesFromDir(
+    const std::string& dirPath, const std::regex& extensionFilter);
 
 /**
  * Converts a cv::Mat to html code which can be displayed in a QLabel or a webpage.
  */
-std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle = "",
-                         int precision = 2);
+std::string matrixToHTML(
+    const cv::Mat matrix, const std::string& tableStyle = "", int precision = 2);
 
 /**
  * Converts an OpenCV matrix into an property tree

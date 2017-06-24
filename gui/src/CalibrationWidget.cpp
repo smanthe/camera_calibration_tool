@@ -22,11 +22,11 @@
 #include <vector>
 
 CalibrationWidget::CalibrationWidget(QWidget* parent)
-    : QWidget(parent),
-      widget(new Ui::CalibrationWidget),
-      imgModel(new ImageModel),
-      currentImage(0),
-      calibrationRunning(false)
+    : QWidget(parent)
+    , widget(new Ui::CalibrationWidget)
+    , imgModel(new ImageModel)
+    , currentImage(0)
+    , calibrationRunning(false)
 {
     setupUi();
     connectSignalsAndSlots();
@@ -73,8 +73,8 @@ void CalibrationWidget::startCalibration()
         return;
     }
 
-    const int32_t cornerRefinmentWindowSizeHorizontal =
-        this->widget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
+    const int32_t cornerRefinmentWindowSizeHorizontal
+        = this->widget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
     if (!ok)
     {
         errorDialog->setText(
@@ -84,8 +84,8 @@ void CalibrationWidget::startCalibration()
         return;
     }
 
-    const int32_t cornerRefinmentWindowSizeVertical =
-        this->widget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
+    const int32_t cornerRefinmentWindowSizeVertical
+        = this->widget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
     if (!ok)
     {
         errorDialog->setText(
@@ -130,9 +130,8 @@ void CalibrationWidget::startCalibration()
     }
 
     // Get filepath
-    const QString filePath =
-        QFileDialog::getSaveFileName(this, trUtf8("Datei speichern"), QDir::homePath() + "/",
-                                     trUtf8("XML-Dateien (*.xml);;JSON-Dateien (*.json)"));
+    const QString filePath = QFileDialog::getSaveFileName(this, trUtf8("Datei speichern"),
+        QDir::homePath() + "/", trUtf8("XML-Dateien (*.xml);;JSON-Dateien (*.json)"));
 
     if (!filePath.endsWith(".xml") && !filePath.endsWith(".json"))
     {
@@ -160,19 +159,20 @@ void CalibrationWidget::startCalibration()
     disableButtons();
 
     // http://qt-project.org/wiki/QtConcurrent-run-member-function
-    calibrationFuture =
-        QtConcurrent::run(this, &CalibrationWidget::doCalibration, filePath, filePathModelIndices);
+    calibrationFuture = QtConcurrent::run(
+        this, &CalibrationWidget::doCalibration, filePath, filePathModelIndices);
     calibrationRunning = true;
 }
 //------------------------------------------------------------------------------------------------
-void CalibrationWidget::doCalibration(const QString& filePath,
-                                      const std::vector<int>& filePathModelIndices)
+void CalibrationWidget::doCalibration(
+    const QString& filePath, const std::vector<int>& filePathModelIndices)
 {
     namespace pl = std::placeholders;
     auto f = std::bind(&ProgressState::emitSignals, calibrationState, pl::_1, pl::_2, pl::_3);
     try
     {
         const int index = this->widget->comboBox_distortionModel->currentIndex();
+        std::cout << "[index]: " << index << std::endl;
         calibTool.calibrateCamera(f, cv::CALIB_RATIONAL_MODEL);
     }
     catch (const std::runtime_error& e)
@@ -187,7 +187,7 @@ void CalibrationWidget::doCalibration(const QString& filePath,
     }
     catch (...)
     {
-        emit calibrationDone(false, trUtf8("Unbekannter Fehler."));
+        emit calibrationDone(false, trUtf8("Unknown exception."));
         return;
     }
 
@@ -221,15 +221,14 @@ void CalibrationWidget::stopCalibration()
     // cancel the calibration and wait for thread has finished
     if (calibrationFuture.isRunning())
     {
-        QMessageBox::information(
-            this, trUtf8("Kalibrierung stoppen"),
+        QMessageBox::information(this, trUtf8("Kalibrierung stoppen"),
             trUtf8("Die Kalibrierung wird abgebrochen, dies kann einen Moment dauern."));
         calibrationFuture.cancel();
         calibrationFuture.waitForFinished();
     }
     else
         QMessageBox::information(this, trUtf8("Kalibrierung abgeschlossen"),
-                                 trUtf8("Das Kalibrieren der Kamera ist abegschlossen."));
+            trUtf8("Das Kalibrieren der Kamera ist abegschlossen."));
 
     calibrationRunning = false;
     imgModel->setCheckboxesEnabled(true);
@@ -248,8 +247,8 @@ void CalibrationWidget::on_pushButton_loeschen_clicked()
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_hinzufuegen_clicked()
 {
-    const QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(),
-                                                    trUtf8("Images (*.png *.jpg)"));
+    const QString filePath = QFileDialog::getOpenFileName(
+        this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("Images (*.png *.jpg)"));
 
     if (filePath == "")
         return;
@@ -285,8 +284,8 @@ void CalibrationWidget::setupUi()
     QDoubleValidator* qdv = new QDoubleValidator(0, 9999999999999, 10, this);
     widget->lineEdit_quadratGroesse->setValidator(qdv);
 
-    errorDialog = new QMessageBox(QMessageBox::Warning, trUtf8("Fehler"), trUtf8("Fehler"),
-                                  QMessageBox::Ok, this);
+    errorDialog = new QMessageBox(
+        QMessageBox::Warning, trUtf8("Fehler"), trUtf8("Fehler"), QMessageBox::Ok, this);
 
     widget->graphicsView->setScene(new QGraphicsScene(widget->graphicsView));
 
@@ -314,81 +313,78 @@ void CalibrationWidget::showImage(const QModelIndex& index)
 
     if (!QFile::exists(filePath))
     {
-        errorDialog->setText(trUtf8("Das Angeforderte Bild existiert nicht mehr im Dateisystem: ") +
-                             filePath);
+        errorDialog->setText(
+            trUtf8("Das Angeforderte Bild existiert nicht mehr im Dateisystem: ") + filePath);
         errorDialog->show();
         return;
     }
 
     switch (widget->comboBox_ansicht->currentIndex())
     {
-        case 0:
+    case 0:
+    {
+        QImage img(filePath);
+
+        if (img.isNull())
         {
-            QImage img(filePath);
-
-            if (img.isNull())
-            {
-                errorDialog->setText(
-                    trUtf8("Das Bild konnte für die Vorschau nicht geöffnet werden."));
-                errorDialog->show();
-                return;
-            }
-
-            currentImage = new QGraphicsPixmapItem(QPixmap::fromImage(img));
-            break;
+            errorDialog->setText(trUtf8("Das Bild konnte für die Vorschau nicht geöffnet werden."));
+            errorDialog->show();
+            return;
         }
-        case 1:
+
+        currentImage = new QGraphicsPixmapItem(QPixmap::fromImage(img));
+        break;
+    }
+    case 1:
+    {
+        if (!calibTool.isCalibrationDataAvailable())
         {
-            if (!calibTool.isCalibrationDataAvailable())
-            {
-                errorDialog->setText(trUtf8("Für diese Funktion müssen erst Kameraparameter "
-                                            "berechnet oder geladen werden."));
-                errorDialog->show();
-                return;
-            }
-
-            cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
-            cv::Mat imgUndist;
-            cv::undistort(cvImg, imgUndist, calibTool.getCameraMatrix(), calibTool.getDistCoeffs());
-
-            currentImage = new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(imgUndist));
-            break;
+            errorDialog->setText(trUtf8("Für diese Funktion müssen erst Kameraparameter "
+                                        "berechnet oder geladen werden."));
+            errorDialog->show();
+            return;
         }
-        case 2:
-        {
-            if (!calibTool.isCalibrationDataAvailable())
-            {
-                errorDialog->setText(
-                    trUtf8("Für diese Funktion müssen erst Kameraparameter geladen werden."));
-                errorDialog->show();
-                return;
-            }
 
-            try
+        cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
+        cv::Mat imgUndist;
+        cv::undistort(cvImg, imgUndist, calibTool.getCameraMatrix(), calibTool.getDistCoeffs());
+
+        currentImage = new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(imgUndist));
+        break;
+    }
+    case 2:
+    {
+        if (!calibTool.isCalibrationDataAvailable())
+        {
+            errorDialog->setText(
+                trUtf8("Für diese Funktion müssen erst Kameraparameter geladen werden."));
+            errorDialog->show();
+            return;
+        }
+
+        try
+        {
+            if (!imgModel->getImageData(index.row()).found)
             {
-                if (!imgModel->getImageData(index.row()).found)
-                {
-                    currentImage = new QGraphicsPixmapItem(0);
-                }
-                else
-                {
-                    cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
-                    cv::drawChessboardCorners(cvImg, calibTool.getChessboardSize(),
-                                              imgModel->getImageData(index.row()).boardCornersImg,
-                                              true);
-                    currentImage =
-                        new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(cvImg));
-                }
-            }
-            catch (const std::out_of_range& e)
-            {
-                std::cerr << trUtf8("out_of_range exception. Dieses Bild existiert nicht mehr")
-                                 .toStdString()
-                          << std::endl;
                 currentImage = new QGraphicsPixmapItem(0);
             }
-            break;
+            else
+            {
+                cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
+                cv::drawChessboardCorners(cvImg, calibTool.getChessboardSize(),
+                    imgModel->getImageData(index.row()).boardCornersImg, true);
+                currentImage = new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(cvImg));
+            }
         }
+        catch (const std::out_of_range& e)
+        {
+            std::cerr
+                << trUtf8("out_of_range exception. Dieses Bild existiert nicht mehr").toStdString()
+                << std::endl;
+            currentImage = new QGraphicsPixmapItem(0);
+        }
+        break;
+    }
     }
 
     widget->graphicsView->fitInView(currentImage, Qt::KeepAspectRatio);
@@ -422,8 +418,8 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 {
-    QString filePath = QFileDialog::getOpenFileName(this, trUtf8("Datei öffnen"), QDir::homePath(),
-                                                    trUtf8("XML (*.xml);;JSON (*.json)"));
+    QString filePath = QFileDialog::getOpenFileName(
+        this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("XML (*.xml);;JSON (*.json)"));
     if (filePath == "")
         return;
 
@@ -453,11 +449,11 @@ void CalibrationWidget::on_comboBox_ansicht_currentIndexChanged(int index)
 void CalibrationWidget::connectSignalsAndSlots()
 {
     connect(widget->tableView_images, SIGNAL(pressed(const QModelIndex&)), this,
-            SLOT(showImage(const QModelIndex&)));
+        SLOT(showImage(const QModelIndex&)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(updateResults(bool, QString)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(stopCalibration()));
     connect(imgModel, SIGNAL(rowsRemoved(const QModelIndex&, int, int)), this->imgModel,
-            SLOT(rowsRemoved(const QModelIndex&, int, int)));
+        SLOT(rowsRemoved(const QModelIndex&, int, int)));
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::closeEvent(QCloseEvent* event)

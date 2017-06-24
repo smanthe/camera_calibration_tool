@@ -10,14 +10,18 @@
 #include <cassert>
 
 
-ProgressState::ProgressState(QProgressBar* pBar, QObject* parent) : QObject(parent), progBar(pBar)
+ProgressState::ProgressState(QProgressBar* pBar, QObject* parent)
+    : QObject(parent)
+    , progBar(pBar)
 {
     assert(progBar != 0);
     connect(this, SIGNAL(setValue(int)), progBar, SLOT(setValue(int)));
     connect(this, SIGNAL(setRange(int, int)), progBar, SLOT(setRange(int, int)));
 }
 
-ProgressState::~ProgressState() {}
+ProgressState::~ProgressState()
+{
+}
 
 void ProgressState::emitSignals(int currentStep, int maxSteps, std::string fileName)
 {

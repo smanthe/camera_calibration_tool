@@ -6,9 +6,14 @@
  */
 
 #include "ResizeableGraphicsView.h"
-ResizeableGraphicsView::ResizeableGraphicsView(QWidget* parent) : QGraphicsView(parent) {}
+ResizeableGraphicsView::ResizeableGraphicsView(QWidget* parent)
+    : QGraphicsView(parent)
+{
+}
 
-ResizeableGraphicsView::~ResizeableGraphicsView() {}
+ResizeableGraphicsView::~ResizeableGraphicsView()
+{
+}
 
 void ResizeableGraphicsView::resizeEvent(QResizeEvent* event)
 {

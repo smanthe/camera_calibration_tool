@@ -9,13 +9,16 @@
 #include "CameraCalibration.h"
 #include "ImageModel.h"
 
-ImageModel::ImageModel(QObject* parent) : QStandardItemModel(parent)
+ImageModel::ImageModel(QObject* parent)
+    : QStandardItemModel(parent)
 {
     initHeader();
     connect(this, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(changeItem(QStandardItem*)));
 }
 
-ImageModel::~ImageModel() {}
+ImageModel::~ImageModel()
+{
+}
 
 void ImageModel::changeItem(QStandardItem* item)
 {
@@ -59,9 +62,15 @@ void ImageModel::initHeader()
     setHorizontalHeaderLabels(header);
 }
 
-ImageModel::ImgData ImageModel::getImageData(int idx) { return imageData.at(idx); }
+ImageModel::ImgData ImageModel::getImageData(int idx)
+{
+    return imageData.at(idx);
+}
 
-std::vector<ImageModel::ImgData> ImageModel::getImageData() { return imageData; }
+std::vector<ImageModel::ImgData> ImageModel::getImageData()
+{
+    return imageData;
+}
 
 void ImageModel::setImageData(int idx, ImgData data)
 {

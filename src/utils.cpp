@@ -12,8 +12,8 @@
 
 namespace libba
 {
-std::vector<std::string> readFilesFromDir(const std::string& dirPath,
-                                          const std::regex& extensionFilter)
+std::vector<std::string> readFilesFromDir(
+    const std::string& dirPath, const std::regex& extensionFilter)
 {
     namespace fs = boost::filesystem;
     fs::path someDir(dirPath);
@@ -64,15 +64,15 @@ std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle, in
 
             switch (type)
             {
-                case CV_32FC1:
-                    stream << matrix.at<float>(i, j);
-                    break;
-                case CV_64FC1:
-                    stream << matrix.at<double>(i, j);
-                    break;
-                default:
-                    throw std::runtime_error("Unhandled type in function matrixToHTML");
-                    break;
+            case CV_32FC1:
+                stream << matrix.at<float>(i, j);
+                break;
+            case CV_64FC1:
+                stream << matrix.at<double>(i, j);
+                break;
+            default:
+                throw std::runtime_error("Unhandled type in function matrixToHTML");
+                break;
             }
             stream << "</td>";
         }

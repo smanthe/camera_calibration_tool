@@ -36,7 +36,8 @@ public:
      * Executes the camera calibration with the current files.
      * @param statusFunc A function which is called if the progress changes.
      */
-    void calibrateCamera(std::function<void(int, int, std::string)> progressFunc, int calibrationFlags);
+    void calibrateCamera(
+        const std::function<void(int, int, std::string)> progressFunc, const int calibrationFlags);
 
     /**
      * Stops the calibration.
