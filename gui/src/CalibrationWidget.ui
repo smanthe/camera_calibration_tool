@@ -314,11 +314,6 @@
                   <string>OpenCV - Rational Model</string>
                  </property>
                 </item>
-                <item>
-                 <property name="text">
-                  <string>OpenCV - Thin Prism Model</string>
-                 </property>
-                </item>
                </widget>
               </item>
              </layout>

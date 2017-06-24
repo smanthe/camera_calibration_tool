@@ -153,6 +153,27 @@ void CalibrationWidget::startCalibration()
     calibTool.setCornerRefinmentWindowSize(
         cv::Size2i(cornerRefinmentWindowSizeHorizontal, cornerRefinmentWindowSizeVertical));
 
+    int calibrationFlags = 0; 
+    const int distortionModelIndex = this->widget->comboBox_distortionModel->currentIndex();
+    switch (distortionModelIndex)
+    {
+    case 0:
+    {
+        calibrationFlags = 0;
+        break;
+    }
+    case 1:
+    {
+        calibrationFlags |= cv::CALIB_RATIONAL_MODEL;
+        break;
+    }
+    default:
+    {
+        throw std::runtime_error("Unknown calibration model.");
+    }
+    }
+    calibTool.setCalibrationFlags(calibrationFlags);
+
     widget->pushButton_kalibrieren->setText(trUtf8("Kalibrierung stoppen"));
     widget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
     imgModel->setCheckboxesEnabled(false);
@@ -173,7 +194,7 @@ void CalibrationWidget::doCalibration(
     {
         const int index = this->widget->comboBox_distortionModel->currentIndex();
         std::cout << "[index]: " << index << std::endl;
-        calibTool.calibrateCamera(f, cv::CALIB_RATIONAL_MODEL);
+        calibTool.calibrateCamera(f);
     }
     catch (const std::runtime_error& e)
     {

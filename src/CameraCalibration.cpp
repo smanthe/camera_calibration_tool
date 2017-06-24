@@ -21,6 +21,7 @@ CameraCalibration::CameraCalibration()
     , stopRequested(false)
     , reprojectionError(0)
     , calibDataAvailabel(false)
+    , calibrationFlags(0)
 {
 }
 //-------------------------------------------------------------------------------------------------
@@ -29,7 +30,7 @@ CameraCalibration::~CameraCalibration()
 }
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::calibrateCamera(
-    const std::function<void(int, int, std::string)> progressFunc, const int calibrationFlags)
+    const std::function<void(int, int, std::string)> progressFunc)
 {
     stopRequested = false;
     calibDataAvailabel = false;
@@ -96,7 +97,7 @@ void CameraCalibration::calibrateCamera(
 
         if (cornerRefinmentWindowSize.width > 0 && cornerRefinmentWindowSize.height > 0)
         {
-            // TODO make this a option for the gui
+            // TODO make this an option for the gui
             if (true)
             {
                 cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
@@ -108,7 +109,7 @@ void CameraCalibration::calibrateCamera(
                 {
                     cv::find4QuadCornerSubpix(img, cornersTemp, cornerRefinmentWindowSize);
                 }
-                catch (cv::Exception& e)
+                catch (const cv::Exception& e)
                 {
                     calibImages[i].patternFound = false;
                     progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
@@ -128,7 +129,6 @@ void CameraCalibration::calibrateCamera(
 
         imgCorners.push_back(std::move(cornersTemp));
         patternCorners.push_back(chessboardCorners3d);
-
         progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
     }
 
@@ -301,12 +301,10 @@ double CameraCalibration::computeDistortUndistortError()
 
     std::vector<cv::Point3d> points_Iu;
     for (double i = -2; i <= 2; i += 0.1)
-    {
         for (double j = -2; j <= 2; j += 0.1)
         {
             points_Iu.emplace_back(i, j, 1);
         }
-    }
 
     cv::Mat rRod, tVec;
     tVec = cv::Mat::zeros(3, 1, CV_64F);
@@ -322,7 +320,6 @@ double CameraCalibration::computeDistortUndistortError()
     {
         const double x = points_Iu[i].x - points2_Iu[i].x;
         const double y = points_Iu[i].y - points2_Iu[i].y;
-
         error += sqrt(x * x + y * y);
     }
 
@@ -425,5 +422,10 @@ cv::Size2i CameraCalibration::getChessboardSize() const
 float CameraCalibration::getChessboardSquareWidth() const
 {
     return chessboardSquareWidth;
+}
+//-------------------------------------------------------------------------------------------------
+void CameraCalibration::setCalibrationFlags(const int calibrationFlags)
+{
+    this->calibrationFlags = calibrationFlags;
 }
 }

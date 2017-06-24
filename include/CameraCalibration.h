@@ -36,8 +36,7 @@ public:
      * Executes the camera calibration with the current files.
      * @param statusFunc A function which is called if the progress changes.
      */
-    void calibrateCamera(
-        const std::function<void(int, int, std::string)> progressFunc, const int calibrationFlags);
+    void calibrateCamera(const std::function<void(int, int, std::string)> progressFunc);
 
     /**
      * Stops the calibration.
@@ -89,6 +88,8 @@ public:
 
     cv::Size getChessboardSize() const;
     float getChessboardSquareWidth() const;
+
+    void setCalibrationFlags(const int calibrationFlags);
 
 protected:
     /**
@@ -160,6 +161,11 @@ protected:
      * Indicates if calibration data is available.
      */
     bool calibDataAvailabel;
+
+    /**
+     * Flags that are passed to the function cv::calibrateCamera .
+     */
+    int calibrationFlags;
 };
 }
 
