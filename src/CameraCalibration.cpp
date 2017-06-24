@@ -99,10 +99,8 @@ void CameraCalibration::calibrateCamera(
         {
             // TODO make this an option for the gui
             if (true)
-            {
                 cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
                     cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-            }
             else
             {
                 try
@@ -179,13 +177,11 @@ void CameraCalibration::exportCameraParametersCv(const std::string& filePath) co
     fs << "vertical_resolution" << imageSize.height;
     fs << "horizontal_resolution" << imageSize.width;
     fs << "reprojection_error" << reprojectionError;
-
     fs.release();
 }
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::exportCameraParametersJSON(const std::string& filePath) const
 {
-    std::cout << "bin da" << std::endl;
     nlohmann::json camJson;
     camJson["fx"] = calibrationMatrix.at<double>(0, 0);
     camJson["fy"] = calibrationMatrix.at<double>(1, 1);
@@ -193,10 +189,12 @@ void CameraCalibration::exportCameraParametersJSON(const std::string& filePath) 
     camJson["cy"] = calibrationMatrix.at<double>(1, 2);
     camJson["horizontal_resolution"] = imageSize.width;
     camJson["vertical_resolution"] = imageSize.height;
-    camJson["distortion_coefficients"] = nlohmann::json::array();
 
+    camJson["distortion_coefficients"] = nlohmann::json::array();
     for (size_t i = 0; i < distortionCoefficients.rows; ++i)
         camJson["distortion_coefficients"].push_back(distortionCoefficients.at<double>(i, 0));
+
+    camJson["reprojection_error"] = reprojectionError;
 
     std::ofstream outStream(filePath);
     outStream << std::setw(4) << camJson << std::endl;
