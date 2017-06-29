@@ -164,10 +164,7 @@ void CameraCalibration::exportCameraParametersCv(const std::string& filePath) co
 {
     cv::FileStorage fs(filePath, cv::FileStorage::WRITE); // Read the settings
     if (!fs.isOpened())
-    {
-        std::cerr << "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
-        return;
-    }
+        throw std::runtime_error("Could not open the configuration file: \"" + filePath + "\"");
 
     fs << "fx" << calibrationMatrix.at<double>(0, 0);
     fs << "fy" << calibrationMatrix.at<double>(1, 1);
@@ -228,10 +225,7 @@ void CameraCalibration::loadCameraParametersXML(const std::string& filePath)
 {
     cv::FileStorage fs(filePath, cv::FileStorage::READ); // Read the settings
     if (!fs.isOpened())
-    {
-        std::cerr << "Could not open the configuration file: \"" << filePath << "\"" << std::endl;
-        return;
-    }
+        throw std::runtime_error("Could not open the configuration file: \"" + filePath + "\"");
 
     calibrationMatrix = cv::Mat::eye(3, 3, CV_64FC1);
     fs["fx"] >> calibrationMatrix.at<double>(0, 0);
@@ -292,14 +286,10 @@ double CameraCalibration::computeReprojectionError()
 //-------------------------------------------------------------------------------------------------
 double CameraCalibration::computeDistortUndistortError()
 {
-    double error = 0;
-
     std::vector<cv::Point3d> points_Iu;
     for (double i = -2; i <= 2; i += 0.1)
         for (double j = -2; j <= 2; j += 0.1)
-        {
             points_Iu.emplace_back(i, j, 1);
-        }
 
     cv::Mat rRod, tVec;
     tVec = cv::Mat::zeros(3, 1, CV_64F);
@@ -311,6 +301,7 @@ double CameraCalibration::computeDistortUndistortError()
     std::vector<cv::Point2d> points2_Iu;
     cv::undistort(points_P, points2_Iu, calibrationMatrix, distortionCoefficients);
 
+    double error = 0;
     for (size_t i = 0; i < points_Iu.size(); ++i)
     {
         const double x = points_Iu[i].x - points2_Iu[i].x;
