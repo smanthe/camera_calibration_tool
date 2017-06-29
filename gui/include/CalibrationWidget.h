@@ -68,6 +68,7 @@ protected:
 
     void enableButtons();
     void disableButtons();
+    void showError(const QString& msg);
 };
 
 #endif /* CALIBRATIONWIDGET_H_ */

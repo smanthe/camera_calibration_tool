@@ -54,7 +54,7 @@ void CalibrationWidget::startCalibration()
     const int cornersHorizontal = this->widget->lineEdit_eckenHorizontal->text().toInt(&ok);
     if (!ok)
     {
-        errorDialog->setText(
+        showError(
             trUtf8("Bitte das Eingabefeld für die Anzahl der horizontalen Ecken überprüfen. Es "
                    "muss eine positive ganze Zahl eingegeben werden."));
         errorDialog->show();
@@ -75,10 +75,9 @@ void CalibrationWidget::startCalibration()
         = this->widget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
     if (!ok)
     {
-        errorDialog->setText(
+        showError(
             trUtf8("Bitte das Eingabefeld für die horizontale Fenstergröße der Eckenverfeinerung "
                    "überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
-        errorDialog->show();
         return;
     }
 
@@ -86,10 +85,9 @@ void CalibrationWidget::startCalibration()
         = this->widget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
     if (!ok)
     {
-        errorDialog->setText(
+        showError(
             trUtf8("Bitte das Eingabefeld für die vertikale Fenstergröße der Eckenverfeinerung "
                    "überprüfen. Es muss eine positive ganze Zahl eingegeben werden."));
-        errorDialog->show();
         return;
     }
 
@@ -104,9 +102,7 @@ void CalibrationWidget::startCalibration()
     std::vector<ImageModel::ImgData> imageData = imgModel->getImageData();
     if (imageData.size() <= 0)
     {
-        errorDialog->setText(
-            trUtf8("Es muss mindestens eine Datei für die Kalibrierung ausgewählt sein."));
-        errorDialog->show();
+        showError(trUtf8("Es muss mindestens eine Datei für die Kalibrierung ausgewählt sein."));
         return;
     }
 
@@ -133,15 +129,13 @@ void CalibrationWidget::startCalibration()
 
     if (!filePath.endsWith(".xml") && !filePath.endsWith(".json"))
     {
-        errorDialog->setText(trUtf8("Die Datei muss die Endung \".xml\" oder \".json\" haben."));
-        errorDialog->show();
+        showError(trUtf8("Die Datei muss die Endung \".xml\" oder \".json\" haben."));
         return;
     }
 
     if (filePath.isEmpty())
     {
-        errorDialog->setText(trUtf8("Dateipfad ist leer."));
-        errorDialog->show();
+        showError(trUtf8("Dateipfad ist leer."));
         return;
     }
 
@@ -342,8 +336,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
 
         if (img.isNull())
         {
-            errorDialog->setText(trUtf8("Das Bild konnte nicht geöffnet werden."));
-            errorDialog->show();
+            showError(trUtf8("Das Bild konnte nicht geöffnet werden."));
             return;
         }
 
@@ -354,9 +347,8 @@ void CalibrationWidget::showImage(const QModelIndex& index)
     {
         if (!calibTool.isCalibrationDataAvailable())
         {
-            errorDialog->setText(trUtf8("Für diese Funktion müssen erst Kameraparameter "
-                                        "berechnet oder geladen werden."));
-            errorDialog->show();
+            showError(trUtf8(
+                "Für diese Funktion müssen erst Kameraparameter berechnet oder geladen werden."));
             return;
         }
 
@@ -371,9 +363,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
     {
         if (!calibTool.isCalibrationDataAvailable())
         {
-            errorDialog->setText(
-                trUtf8("Für diese Funktion müssen erst Kameraparameter geladen werden."));
-            errorDialog->show();
+            showError(trUtf8("Für diese Funktion müssen erst Kameraparameter geladen werden."));
             return;
         }
 
@@ -391,9 +381,8 @@ void CalibrationWidget::showImage(const QModelIndex& index)
         }
         catch (const std::out_of_range& e)
         {
-            std::cerr
-                << trUtf8("out_of_range exception. Dieses Bild existiert nicht mehr").toStdString()
-                << std::endl;
+            showError(trUtf8("out_of_range exception. Dieses Bild existiert nicht mehr"));
+            errorDialog->show();
             currentImage = new QGraphicsPixmapItem(0);
         }
         break;
@@ -540,4 +529,10 @@ void CalibrationWidget::disableButtons()
     this->widget->pushButton_ordnerHinzufuegen->setDisabled(true);
     this->widget->pushButton_hinzufuegen->setDisabled(true);
     this->widget->pushButton_kalibrierdatenLaden->setDisabled(true);
+}
+//-------------------------------------------------------------------------------------------------
+void CalibrationWidget::showError(const QString& msg)
+{
+    errorDialog->setText(msg);
+    errorDialog->show();
 }
