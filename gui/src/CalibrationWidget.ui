@@ -260,7 +260,7 @@
                    <set>Qt::ImhNone</set>
                   </property>
                   <property name="text">
-                   <string>10</string>
+                   <string>5</string>
                   </property>
                  </widget>
                 </item>
@@ -287,7 +287,7 @@
                    <set>Qt::ImhNone</set>
                   </property>
                   <property name="text">
-                   <string>10</string>
+                   <string>5</string>
                   </property>
                  </widget>
                 </item>
@@ -306,12 +306,22 @@
                <widget class="QComboBox" name="comboBox_distortionModel">
                 <item>
                  <property name="text">
-                  <string>OpenCV - Plump Bob</string>
+                  <string>OpenCV - Plump Bob Model</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
                   <string>OpenCV - Rational Model</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>OpenCV - Thin Prism Model</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>OpenCV - Rational and Thin Prism Model</string>
                  </property>
                 </item>
                </widget>

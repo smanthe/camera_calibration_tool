@@ -44,7 +44,7 @@ signals:
     void calibrationDone(bool success = true, const QString& errorMsg = "");
 
 protected:
-    Ui::CalibrationWidget* widget;
+    Ui::CalibrationWidget* calibrationWidget;
     QMessageBox* errorDialog;
 
     ImageModel* imgModel;

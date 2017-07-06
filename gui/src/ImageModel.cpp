@@ -39,15 +39,13 @@ void ImageModel::addImage(QString imgPath)
     imageData.push_back(imgData);
 
     setRowCount(rowCount() + 1);
-    QStandardItem* item;
-    item = new QStandardItem(false);
+    QStandardItem* item = new QStandardItem(false);
     item->setCheckable(true);
     item->setCheckState(Qt::Checked);
 
     setItem(rowCount() - 1, 0, item);
     setItem(rowCount() - 1, 1, new QStandardItem(tr("Nein")));
 
-    QFileInfo info(imgPath);
     item = new QStandardItem(QString::fromStdString(imgData.filePath));
     item->setData(QVariant(imgPath));
 
@@ -58,7 +56,7 @@ void ImageModel::addImage(QString imgPath)
 void ImageModel::initHeader()
 {
     QStringList header;
-    header << tr("Nr.") << tr("Gefunden") << tr("Dateiname") << tr("Fehler");
+    header << trUtf8("Nr.") << trUtf8("Gefunden") << trUtf8("Dateiname") << trUtf8("Fehler");
     setHorizontalHeaderLabels(header);
 }
 
@@ -82,22 +80,18 @@ void ImageModel::updateRow(int idx, const ImgData& data)
 {
     QString foundText = "";
     if (data.found)
-        foundText = tr("Ja");
+        foundText = trUtf8("Ja");
     else
-        foundText = tr("Nein");
+        foundText = trUtf8("Nein");
 
     setItem(idx, 1, new QStandardItem(foundText));
-
     item(idx, 3)->setText(QString::fromStdString(std::to_string(data.error)));
 }
 
 void ImageModel::setCheckboxesEnabled(bool enabled)
 {
     for (int idx = 0; idx < rowCount(); ++idx)
-    {
-        QStandardItem* itemTmp = this->item(idx, 0);
-        itemTmp->setEnabled(enabled);
-    }
+        this->item(idx, 0)->setEnabled(enabled);
 }
 
 void ImageModel::rowsRemoved(const QModelIndex& parent, int start, int end)

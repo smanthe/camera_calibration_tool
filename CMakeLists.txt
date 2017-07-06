@@ -34,15 +34,14 @@ qt5_wrap_cpp(CAMCALIB_MOC ${CMAKE_CURRENT_SOURCE_DIR}/gui/include/ImageModel.h
 
 
 set(HEADER_FILES include/qtOpenCVConversions.h
-                 include/utils.h               
+                 include/utils.h
                  include/CameraCalibration.h
                  gui/include/FileItem.h
                  gui/include/TextWindowWidget.h
                  gui/include/CalibrationWidget.h
                  gui/include/ProgressState.h
                  gui/include/ImageModel.h
-                 gui/include/ResizeableGraphicsView.h
-    )
+                 gui/include/ResizeableGraphicsView.h)
 
 
 set(SOURCE_FILES
@@ -66,7 +65,6 @@ set_property(TARGET camcalib PROPERTY CXX_STANDARD 11)
 set_property(TARGET camcalib PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(camcalib ${LIBS})
-
 
     # Clang-format execution
 add_custom_target(

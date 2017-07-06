@@ -23,7 +23,7 @@
 
 CalibrationWidget::CalibrationWidget(QWidget* parent)
     : QWidget(parent)
-    , widget(new Ui::CalibrationWidget)
+    , calibrationWidget(new Ui::CalibrationWidget)
     , imgModel(new ImageModel)
     , currentImage(0)
     , calibrationRunning(false)
@@ -51,7 +51,7 @@ void CalibrationWidget::startCalibration()
     // Read settings
     bool ok = false;
 
-    const int cornersHorizontal = this->widget->lineEdit_eckenHorizontal->text().toInt(&ok);
+    const int cornersHorizontal = calibrationWidget->lineEdit_eckenHorizontal->text().toInt(&ok);
     if (!ok)
     {
         showError(
@@ -61,7 +61,7 @@ void CalibrationWidget::startCalibration()
         return;
     }
 
-    const int cornersVertical = this->widget->lineEdit_eckenVertikal->text().toInt(&ok);
+    const int cornersVertical = calibrationWidget->lineEdit_eckenVertikal->text().toInt(&ok);
     if (!ok)
     {
         errorDialog->setText(
@@ -72,7 +72,7 @@ void CalibrationWidget::startCalibration()
     }
 
     const int32_t cornerRefinmentWindowSizeHorizontal
-        = this->widget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
+        = calibrationWidget->lineEdit_cornerRefinmentWindowSizeHorizontal->text().toInt(&ok);
     if (!ok)
     {
         showError(
@@ -82,7 +82,7 @@ void CalibrationWidget::startCalibration()
     }
 
     const int32_t cornerRefinmentWindowSizeVertical
-        = this->widget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
+        = calibrationWidget->lineEdit_cornerRefinmentWindowSizeVertical->text().toInt(&ok);
     if (!ok)
     {
         showError(
@@ -91,11 +91,10 @@ void CalibrationWidget::startCalibration()
         return;
     }
 
-    double squareWidth = this->widget->lineEdit_quadratGroesse->text().toDouble(&ok);
+    const double squareWidth = calibrationWidget->lineEdit_quadratGroesse->text().toDouble(&ok);
     if (!ok)
     {
-        errorDialog->setText(trUtf8("Bitte das Eingabefeld für die Quadratgröße überprüfen."));
-        errorDialog->show();
+        showError(trUtf8("Bitte das Eingabefeld für die Quadratgröße überprüfen."));
         return;
     }
 
@@ -146,8 +145,7 @@ void CalibrationWidget::startCalibration()
         cv::Size2i(cornerRefinmentWindowSizeHorizontal, cornerRefinmentWindowSizeVertical));
 
     int calibrationFlags = 0;
-    const int distortionModelIndex = this->widget->comboBox_distortionModel->currentIndex();
-    switch (distortionModelIndex)
+    switch (calibrationWidget->comboBox_distortionModel->currentIndex())
     {
     case 0:
     {
@@ -159,15 +157,26 @@ void CalibrationWidget::startCalibration()
         calibrationFlags |= cv::CALIB_RATIONAL_MODEL;
         break;
     }
+    case 2:
+    {
+        calibrationFlags |= cv::CALIB_THIN_PRISM_MODEL;
+        break;
+    }
+    case 3:
+    {
+        calibrationFlags |= cv::CALIB_RATIONAL_MODEL | cv::CALIB_THIN_PRISM_MODEL;
+        break;
+    }
     default:
     {
         throw std::runtime_error("Unknown calibration model.");
     }
     }
+
     calibTool.setCalibrationFlags(calibrationFlags);
 
-    widget->pushButton_kalibrieren->setText(trUtf8("Kalibrierung stoppen"));
-    widget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    calibrationWidget->pushButton_kalibrieren->setText(trUtf8("Kalibrierung stoppen"));
+    calibrationWidget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
     imgModel->setCheckboxesEnabled(false);
     disableButtons();
 
@@ -243,17 +252,17 @@ void CalibrationWidget::stopCalibration()
 
     calibrationRunning = false;
     imgModel->setCheckboxesEnabled(true);
-    widget->pushButton_kalibrieren->setText(trUtf8("Kalibrieren"));
+    calibrationWidget->pushButton_kalibrieren->setText(trUtf8("Kalibrieren"));
 
     // reset progressbar
-    widget->progressBar->setValue(0);
+    calibrationWidget->progressBar->setValue(0);
     enableButtons();
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_loeschen_clicked()
 {
-    QModelIndex i = widget->tableView_images->currentIndex();
-    widget->tableView_images->model()->removeRow(i.row(), QModelIndex());
+    QModelIndex i = calibrationWidget->tableView_images->currentIndex();
+    calibrationWidget->tableView_images->model()->removeRow(i.row(), QModelIndex());
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_hinzufuegen_clicked()
@@ -280,41 +289,41 @@ void CalibrationWidget::on_pushButton_ordnerHinzufuegen_clicked()
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::setupUi()
 {
-    widget->setupUi(this);
+    calibrationWidget->setupUi(this);
 
     QIntValidator* qiv = new QIntValidator(2, 100, this);
-    widget->lineEdit_eckenHorizontal->setValidator(qiv);
-    widget->lineEdit_eckenVertikal->setValidator(qiv);
+    calibrationWidget->lineEdit_eckenHorizontal->setValidator(qiv);
+    calibrationWidget->lineEdit_eckenVertikal->setValidator(qiv);
 
     QIntValidator* qiv2 = new QIntValidator(0, 100, this);
-    widget->lineEdit_cornerRefinmentWindowSizeVertical->setValidator(qiv2);
-    widget->lineEdit_cornerRefinmentWindowSizeHorizontal->setValidator(qiv2);
+    calibrationWidget->lineEdit_cornerRefinmentWindowSizeVertical->setValidator(qiv2);
+    calibrationWidget->lineEdit_cornerRefinmentWindowSizeHorizontal->setValidator(qiv2);
 
     QDoubleValidator* qdv = new QDoubleValidator(0, std::numeric_limits<double>::max(), 10, this);
-    widget->lineEdit_quadratGroesse->setValidator(qdv);
+    calibrationWidget->lineEdit_quadratGroesse->setValidator(qdv);
 
     errorDialog = new QMessageBox(
         QMessageBox::Warning, trUtf8("Fehler"), trUtf8("Fehler"), QMessageBox::Ok, this);
 
-    widget->graphicsView->setScene(new QGraphicsScene(widget->graphicsView));
+    calibrationWidget->graphicsView->setScene(new QGraphicsScene(calibrationWidget->graphicsView));
 
-    widget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    widget->tableView_images->setSelectionBehavior(QAbstractItemView::SelectRows);
-    widget->tableView_images->setModel(imgModel);
-    widget->tableView_images->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    widget->tableView_images->horizontalHeader()->sectionResizeMode(QHeaderView::ResizeToContents);
-    widget->tableView_images->resizeColumnsToContents();
+    calibrationWidget->tableView_images->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    calibrationWidget->tableView_images->setSelectionBehavior(QAbstractItemView::SelectRows);
+    calibrationWidget->tableView_images->setModel(imgModel);
+    calibrationWidget->tableView_images->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    calibrationWidget->tableView_images->horizontalHeader()->sectionResizeMode(QHeaderView::ResizeToContents);
+    calibrationWidget->tableView_images->resizeColumnsToContents();
 
-    widget->lineEdit_eckenVertikal->setText(QString::number(calibTool.getChessboardSize().height));
-    widget->lineEdit_eckenHorizontal->setText(QString::number(calibTool.getChessboardSize().width));
-    widget->lineEdit_quadratGroesse->setText(QString::number(calibTool.getChessboardSquareWidth()));
+    calibrationWidget->lineEdit_eckenVertikal->setText(QString::number(calibTool.getChessboardSize().height));
+    calibrationWidget->lineEdit_eckenHorizontal->setText(QString::number(calibTool.getChessboardSize().width));
+    calibrationWidget->lineEdit_quadratGroesse->setText(QString::number(calibTool.getChessboardSquareWidth()));
 
-    calibrationState = new ProgressState(widget->progressBar);
+    calibrationState = new ProgressState(calibrationWidget->progressBar);
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::showImage(const QModelIndex& index)
 {
-    QGraphicsScene* scene = widget->graphicsView->scene();
+    QGraphicsScene* scene = calibrationWidget->graphicsView->scene();
 
     // delete all items in the scene (currentImage)
     scene->clear();
@@ -328,7 +337,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
         return;
     }
 
-    switch (widget->comboBox_ansicht->currentIndex())
+    switch (calibrationWidget->comboBox_ansicht->currentIndex())
     {
     case 0:
     {
@@ -389,7 +398,7 @@ void CalibrationWidget::showImage(const QModelIndex& index)
     }
     }
 
-    widget->graphicsView->fitInView(currentImage, Qt::KeepAspectRatio);
+    calibrationWidget->graphicsView->fitInView(currentImage, Qt::KeepAspectRatio);
     scene->addItem(currentImage);
 }
 //------------------------------------------------------------------------------------------------
@@ -407,7 +416,7 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
     const std::string tableStyle = "cellpadding=\"2\"";
     std::string tableHTML = libba::matrixToHTML(calibTool.getCameraMatrix(), tableStyle, precision);
 
-    widget->label_cameraMatrix->setText(QString::fromStdString(tableHTML));
+    calibrationWidget->label_cameraMatrix->setText(QString::fromStdString(tableHTML));
 
  
     tableHTML = "<table cellpadding=\"2\">";
@@ -456,6 +465,26 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
             label = "kappa6";
             break;
         }
+        case 8:
+        {
+            label = "s1";
+            break;
+        }
+        case 9:
+        {
+            label = "s2";
+            break;
+        }
+        case 10:
+        {
+            label = "s3";
+            break;
+        }
+        case 11:
+        {
+            label = "s4";
+            break;
+        }
         }
         label += ":";
         tableHTML += "<tr><td>" + label + "</td><td>"
@@ -463,9 +492,8 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
     }
 
     tableHTML += "</table>";
-    widget->label_distoritionCoefficents->setText(QString::fromStdString(tableHTML));
-
-    widget->label_reprojectionError->setText(
+    calibrationWidget->label_distoritionCoefficents->setText(QString::fromStdString(tableHTML));
+    calibrationWidget->label_reprojectionError->setText(
         QString::number(calibTool.getReprojectionError(), 'g', 4));
 }
 //------------------------------------------------------------------------------------------------
@@ -473,6 +501,7 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(
         this, trUtf8("Datei öffnen"), QDir::homePath(), trUtf8("XML (*.xml);;JSON (*.json)"));
+
     if (filePath == "")
         return;
 
@@ -494,14 +523,14 @@ void CalibrationWidget::on_pushButton_kalibrierdatenLaden_clicked()
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_comboBox_ansicht_currentIndexChanged(int index)
 {
-    const QModelIndex i = widget->tableView_images->currentIndex();
+    const QModelIndex i = calibrationWidget->tableView_images->currentIndex();
     if (i.isValid())
         showImage(i);
 }
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::connectSignalsAndSlots()
 {
-    connect(widget->tableView_images, SIGNAL(pressed(const QModelIndex&)), this,
+    connect(calibrationWidget->tableView_images, SIGNAL(pressed(const QModelIndex&)), this,
         SLOT(showImage(const QModelIndex&)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(updateResults(bool, QString)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(stopCalibration()));
@@ -517,18 +546,18 @@ void CalibrationWidget::closeEvent(QCloseEvent* event)
 //-------------------------------------------------------------------------------------------------
 void CalibrationWidget::enableButtons()
 {
-    this->widget->pushButton_loeschen->setDisabled(false);
-    this->widget->pushButton_ordnerHinzufuegen->setDisabled(false);
-    this->widget->pushButton_hinzufuegen->setDisabled(false);
-    this->widget->pushButton_kalibrierdatenLaden->setDisabled(false);
+    calibrationWidget->pushButton_loeschen->setDisabled(false);
+    calibrationWidget->pushButton_ordnerHinzufuegen->setDisabled(false);
+    calibrationWidget->pushButton_hinzufuegen->setDisabled(false);
+    calibrationWidget->pushButton_kalibrierdatenLaden->setDisabled(false);
 }
 //-------------------------------------------------------------------------------------------------
 void CalibrationWidget::disableButtons()
 {
-    this->widget->pushButton_loeschen->setDisabled(true);
-    this->widget->pushButton_ordnerHinzufuegen->setDisabled(true);
-    this->widget->pushButton_hinzufuegen->setDisabled(true);
-    this->widget->pushButton_kalibrierdatenLaden->setDisabled(true);
+    calibrationWidget->pushButton_loeschen->setDisabled(true);
+    calibrationWidget->pushButton_ordnerHinzufuegen->setDisabled(true);
+    calibrationWidget->pushButton_hinzufuegen->setDisabled(true);
+    calibrationWidget->pushButton_kalibrierdatenLaden->setDisabled(true);
 }
 //-------------------------------------------------------------------------------------------------
 void CalibrationWidget::showError(const QString& msg)

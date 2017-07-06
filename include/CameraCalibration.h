@@ -22,7 +22,6 @@ class CameraCalibration
 {
 public:
     CameraCalibration();
-    virtual ~CameraCalibration();
 
     struct CalibImgInfo
     {

@@ -25,10 +25,6 @@ CameraCalibration::CameraCalibration()
 {
 }
 //-------------------------------------------------------------------------------------------------
-CameraCalibration::~CameraCalibration()
-{
-}
-//-------------------------------------------------------------------------------------------------
 void CameraCalibration::calibrateCamera(
     const std::function<void(int, int, std::string)> progressFunc)
 {
@@ -97,25 +93,24 @@ void CameraCalibration::calibrateCamera(
 
         if (cornerRefinmentWindowSize.width > 0 && cornerRefinmentWindowSize.height > 0)
         {
-            // TODO make this an option for the gui
-            if (true)
-                cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
-                    cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-            else
+            try
             {
-                try
-                {
+                // TODO make this an option for the gui
+                if (true)
+                    cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
+                        cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+                else
                     cv::find4QuadCornerSubpix(img, cornersTemp, cornerRefinmentWindowSize);
-                }
-                catch (const cv::Exception& e)
-                {
-                    calibImages[i].patternFound = false;
-                    progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+            }
 
-                    std::cout << "OpenCV exception for image " << i
-                              << " in find4QuadCornerSubpix : " << e.what() << std::endl;
-                    continue;
-                }
+            catch (const cv::Exception& e)
+            {
+                calibImages[i].patternFound = false;
+                progressFunc(currentStep, maxNumberSteps, calibImages[i].filePath);
+
+                std::cout << "OpenCV exception for image " << i
+                          << " during subpixel refinment: " << e.what() << std::endl;
+                continue;
             }
         }
 
@@ -134,8 +129,11 @@ void CameraCalibration::calibrateCamera(
     {
         calibrationMatrix = cv::Mat::eye(3, 3, CV_64F);
         distortionCoefficients = cv::Mat::zeros(12, 1, CV_64F);
+
+        // TODO make the number of iterations changeable
         cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
-            distortionCoefficients, rotationVector, translationVector, calibrationFlags);
+            distortionCoefficients, rotationVector, translationVector, calibrationFlags,
+            cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, DBL_EPSILON));
         currentStep++;
         progressFunc(currentStep, maxNumberSteps, "");
     }
@@ -325,7 +323,9 @@ const cv::Mat& CameraCalibration::getDistCoeffs() const
 //-------------------------------------------------------------------------------------------------
 size_t CameraCalibration::getNumDistortionCoefficents() const
 {
-    if (calibrationFlags & cv::CALIB_RATIONAL_MODEL)
+    if (calibrationFlags & cv::CALIB_THIN_PRISM_MODEL)
+        return 12;
+    else if (calibrationFlags & cv::CALIB_RATIONAL_MODEL)
         return 8;
     else
         return 5;
