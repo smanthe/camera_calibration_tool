@@ -76,12 +76,12 @@ public:
 
     void setFiles(const std::vector<std::string>& files);
     void addFile(const std::string& file);
-    void removeFile(int index);
+    void removeFile(const int index);
     void clearFiles();
 
     void setChessboardSize(const cv::Size2i& chessboardSize);
     void setCornerRefinmentWindowSize(const cv::Size2i& cornerRefinmentWindowSize);
-    void setChessboardSquareWidth(float chessboardSquareWidth);
+    void setChessboardSquareWidth(const float chessboardSquareWidth);
     bool isStopRequested() const;
     float getReprojectionError() const;
 

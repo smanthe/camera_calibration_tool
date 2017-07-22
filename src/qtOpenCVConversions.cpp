@@ -67,7 +67,7 @@ QPixmap cvMatToQPixmap(const cv::Mat& inMat)
 // data with the cv::Mat directly
 //    NOTE: Format_RGB888 is an exception since we need to use a local QImage and thus must clone
 //    the data regardless
-cv::Mat QImageToCvMat(const QImage& inImage, bool inCloneImageData)
+cv::Mat QImageToCvMat(const QImage& inImage, const bool inCloneImageData)
 {
     switch (inImage.format())
     {
@@ -114,7 +114,7 @@ cv::Mat QImageToCvMat(const QImage& inImage, bool inCloneImageData)
 // with the cv::Mat directly
 //    NOTE: Format_RGB888 is an exception since we need to use a local QImage and thus must clone
 //    the data regardless
-cv::Mat QPixmapToCvMat(const QPixmap& inPixmap, bool inCloneImageData)
+cv::Mat QPixmapToCvMat(const QPixmap& inPixmap, const bool inCloneImageData)
 {
     return QImageToCvMat(inPixmap.toImage(), inCloneImageData);
 }

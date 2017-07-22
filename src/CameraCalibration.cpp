@@ -46,39 +46,33 @@ void CameraCalibration::calibrateCamera(
     if (calibImages.size() == 0)
         throw std::runtime_error("No images for calibration provided.");
 
-    int maxNumberSteps = calibImages.size() + 1;
+    const int maxNumberSteps = calibImages.size() + 1;
     int currentStep = 0;
 
     imageSize.width = -1;
     imageSize.height = -1;
-    cv::Mat img;
     for (size_t i = 0; i < calibImages.size(); ++i)
     {
         calibImages[i].reprojectionError = 0;
         calibImages[i].patternFound = false;
 
         currentStep++;
-        img = cv::imread(calibImages[i].filePath, CV_LOAD_IMAGE_GRAYSCALE);
+        const cv::Mat img = cv::imread(calibImages[i].filePath, CV_LOAD_IMAGE_GRAYSCALE);
 
-        if (imageSize.width == -1)
-        {
-            imageSize.width = img.cols;
-            imageSize.height = img.rows;
-        }
+        if (i == 0)
+            imageSize = img.size();
 
         if (img.cols != imageSize.width || img.rows != imageSize.height)
         {
-            std::string errorMsg
-                = "This image had the wrong size for the calibration: " + calibImages[i].filePath;
-            errorMsg += " expected: " + std::to_string(imageSize.width) + "x"
-                + std::to_string(imageSize.height);
-            errorMsg += " img: " + std::to_string(img.cols) + "x" + std::to_string(img.rows);
-            std::cerr << errorMsg << std::endl;
+            std::string errorMsg = "This image had the wrong size for the calibration: "
+                + calibImages[i].filePath + " expected: " + std::to_string(imageSize.width) + "x"
+                + std::to_string(imageSize.height) + " img: " + std::to_string(img.cols) + "x"
+                + std::to_string(img.rows);
             throw std::runtime_error(errorMsg);
         }
 
         std::vector<cv::Point2f> cornersTemp;
-        bool patternFound = cv::findChessboardCorners(img, chessboardCorners, cornersTemp,
+        const bool patternFound = cv::findChessboardCorners(img, chessboardCorners, cornersTemp,
             CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
         if (stopRequested)
@@ -131,7 +125,7 @@ void CameraCalibration::calibrateCamera(
         distortionCoefficients = cv::Mat::zeros(12, 1, CV_64F);
 
         // TODO make the number of iterations changeable
-        cv::calibrateCamera(patternCorners, imgCorners, img.size(), calibrationMatrix,
+        cv::calibrateCamera(patternCorners, imgCorners, imageSize, calibrationMatrix,
             distortionCoefficients, rotationVector, translationVector, calibrationFlags,
             cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, DBL_EPSILON));
         currentStep++;
@@ -363,7 +357,7 @@ void CameraCalibration::stopCalibration()
     stopRequested = true;
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::removeFile(int index)
+void CameraCalibration::removeFile(const int index)
 {
     calibImages.erase(calibImages.begin() + index);
 }
@@ -383,7 +377,7 @@ void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRef
     this->cornerRefinmentWindowSize = cornerRefinmentWindowSize;
 }
 //-------------------------------------------------------------------------------------------------
-void CameraCalibration::setChessboardSquareWidth(float chessboardSquareWidth)
+void CameraCalibration::setChessboardSquareWidth(const float chessboardSquareWidth)
 {
     this->chessboardSquareWidth = chessboardSquareWidth;
 }
