@@ -36,7 +36,7 @@ public slots:
     void on_pushButton_ordnerHinzufuegen_clicked();
     void on_comboBox_ansicht_currentIndexChanged(int index);
 
-    void showImage(const QModelIndex& index);
+    void showImage(const QModelIndex& currentIndex);
     void updateResults(bool success = true, const QString& errorMsg = "");
     void stopCalibration();
 

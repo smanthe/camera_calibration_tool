@@ -321,13 +321,13 @@ void CalibrationWidget::setupUi()
     calibrationState = new ProgressState(calibrationWidget->progressBar);
 }
 //------------------------------------------------------------------------------------------------
-void CalibrationWidget::showImage(const QModelIndex& index)
+void CalibrationWidget::showImage(const QModelIndex& currentIndex)
 {
     QGraphicsScene* scene = calibrationWidget->graphicsView->scene();
 
     // delete all items in the scene (currentImage)
     scene->clear();
-    QString filePath = QString::fromStdString(imgModel->getImageData(index.row()).filePath);
+    QString filePath = QString::fromStdString(imgModel->getImageData(currentIndex.row()).filePath);
 
     if (!QFile::exists(filePath))
     {
@@ -378,13 +378,13 @@ void CalibrationWidget::showImage(const QModelIndex& index)
 
         try
         {
-            if (!imgModel->getImageData(index.row()).found)
+            if (!imgModel->getImageData(currentIndex.row()).found)
                 currentImage = new QGraphicsPixmapItem(0);
             else
             {
                 cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
                 cv::drawChessboardCorners(cvImg, calibTool.getChessboardSize(),
-                    imgModel->getImageData(index.row()).boardCornersImg, true);
+                    imgModel->getImageData(currentIndex.row()).boardCornersImg, true);
                 currentImage = new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(cvImg));
             }
         }
@@ -530,7 +530,8 @@ void CalibrationWidget::on_comboBox_ansicht_currentIndexChanged(int index)
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::connectSignalsAndSlots()
 {
-    connect(calibrationWidget->tableView_images, SIGNAL(pressed(const QModelIndex&)), this,
+    connect(calibrationWidget->tableView_images->selectionModel(),
+        SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), this,
         SLOT(showImage(const QModelIndex&)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(updateResults(bool, QString)));
     connect(this, SIGNAL(calibrationDone(bool, QString)), this, SLOT(stopCalibration()));
