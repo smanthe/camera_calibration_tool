@@ -261,7 +261,7 @@ void CalibrationWidget::stopCalibration()
 //------------------------------------------------------------------------------------------------
 void CalibrationWidget::on_pushButton_loeschen_clicked()
 {
-    QModelIndex i = calibrationWidget->tableView_images->currentIndex();
+    const QModelIndex i = calibrationWidget->tableView_images->currentIndex();
     calibrationWidget->tableView_images->model()->removeRow(i.row(), QModelIndex());
 }
 //------------------------------------------------------------------------------------------------
@@ -327,7 +327,13 @@ void CalibrationWidget::showImage(const QModelIndex& currentIndex)
 
     // delete all items in the scene (currentImage)
     scene->clear();
-    QString filePath = QString::fromStdString(imgModel->getImageData(currentIndex.row()).filePath);
+
+    const int row = currentIndex.row();
+    if (row < 0)
+        return;
+    
+    const auto filePath = QString::fromStdString(imgModel->getImageData(row).filePath);
+
 
     if (!QFile::exists(filePath))
     {

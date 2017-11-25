@@ -22,9 +22,9 @@ ImageModel::~ImageModel()
 
 void ImageModel::changeItem(QStandardItem* item)
 {
-    int row = item->row();
-    int col = item->column();
-
+    const int row = item->row();
+    const int col = item->column();
+    
     if (col == 0)
         imageData.at(row).checked = item->checkState() == Qt::Checked;
 }
