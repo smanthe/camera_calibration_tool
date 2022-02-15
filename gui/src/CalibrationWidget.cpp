@@ -311,12 +311,16 @@ void CalibrationWidget::setupUi()
     calibrationWidget->tableView_images->setSelectionBehavior(QAbstractItemView::SelectRows);
     calibrationWidget->tableView_images->setModel(imgModel);
     calibrationWidget->tableView_images->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    calibrationWidget->tableView_images->horizontalHeader()->sectionResizeMode(QHeaderView::ResizeToContents);
+    calibrationWidget->tableView_images->horizontalHeader()->sectionResizeMode(
+        QHeaderView::ResizeToContents);
     calibrationWidget->tableView_images->resizeColumnsToContents();
 
-    calibrationWidget->lineEdit_eckenVertikal->setText(QString::number(calibTool.getChessboardSize().height));
-    calibrationWidget->lineEdit_eckenHorizontal->setText(QString::number(calibTool.getChessboardSize().width));
-    calibrationWidget->lineEdit_quadratGroesse->setText(QString::number(calibTool.getChessboardSquareWidth()));
+    calibrationWidget->lineEdit_eckenVertikal->setText(
+        QString::number(calibTool.getChessboardSize().height));
+    calibrationWidget->lineEdit_eckenHorizontal->setText(
+        QString::number(calibTool.getChessboardSize().width));
+    calibrationWidget->lineEdit_quadratGroesse->setText(
+        QString::number(calibTool.getChessboardSquareWidth()));
 
     calibrationState = new ProgressState(calibrationWidget->progressBar);
 }
@@ -331,7 +335,7 @@ void CalibrationWidget::showImage(const QModelIndex& currentIndex)
     const int row = currentIndex.row();
     if (row < 0)
         return;
-    
+
     const auto filePath = QString::fromStdString(imgModel->getImageData(row).filePath);
 
 
@@ -367,7 +371,7 @@ void CalibrationWidget::showImage(const QModelIndex& currentIndex)
             return;
         }
 
-        cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
+        cv::Mat cvImg = cv::imread(filePath.toStdString(), cv::IMREAD_COLOR);
         cv::Mat imgUndist;
         cv::undistort(cvImg, imgUndist, calibTool.getCameraMatrix(), calibTool.getDistCoeffs());
 
@@ -388,7 +392,7 @@ void CalibrationWidget::showImage(const QModelIndex& currentIndex)
                 currentImage = new QGraphicsPixmapItem(0);
             else
             {
-                cv::Mat cvImg = cv::imread(filePath.toStdString(), CV_LOAD_IMAGE_COLOR);
+                cv::Mat cvImg = cv::imread(filePath.toStdString(), cv::IMREAD_COLOR);
                 cv::drawChessboardCorners(cvImg, calibTool.getChessboardSize(),
                     imgModel->getImageData(currentIndex.row()).boardCornersImg, true);
                 currentImage = new QGraphicsPixmapItem(qtOpenCvConversions::cvMatToQPixmap(cvImg));
@@ -424,7 +428,7 @@ void CalibrationWidget::updateResults(bool success, const QString& errorMsg)
 
     calibrationWidget->label_cameraMatrix->setText(QString::fromStdString(tableHTML));
 
- 
+
     tableHTML = "<table cellpadding=\"2\">";
     for (size_t i = 0; i < calibTool.getNumDistortionCoefficents(); ++i)
     {

@@ -9,6 +9,7 @@
 #include "json.hpp"
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <opencv2/core.hpp>
 #include <stdexcept>
 
 namespace libba
@@ -57,7 +58,7 @@ void CameraCalibration::calibrateCamera(
         calibImages[i].patternFound = false;
 
         currentStep++;
-        const cv::Mat img = cv::imread(calibImages[i].filePath, CV_LOAD_IMAGE_GRAYSCALE);
+        const cv::Mat img = cv::imread(calibImages[i].filePath, cv::IMREAD_GRAYSCALE);
 
         if (i == 0)
             imageSize = img.size();
@@ -73,7 +74,7 @@ void CameraCalibration::calibrateCamera(
 
         std::vector<cv::Point2f> cornersTemp;
         const bool patternFound = cv::findChessboardCorners(img, chessboardCorners, cornersTemp,
-            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+            cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FILTER_QUADS);
 
         if (stopRequested)
             return;
@@ -92,7 +93,7 @@ void CameraCalibration::calibrateCamera(
                 // TODO make this an option for the gui
                 if (true)
                     cv::cornerSubPix(img, cornersTemp, cornerRefinmentWindowSize, cv::Size(-1, -1),
-                        cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+                        cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.1));
                 else
                     cv::find4QuadCornerSubpix(img, cornersTemp, cornerRefinmentWindowSize);
             }
@@ -416,4 +417,4 @@ void CameraCalibration::setCalibrationFlags(const int calibrationFlags)
 {
     this->calibrationFlags = calibrationFlags;
 }
-}
+} // namespace libba

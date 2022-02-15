@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.6.2 FATAL_ERROR)
 project(cameraCalibrationTool)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
@@ -17,9 +17,11 @@ set(LIBS ${LIBS} ${Boost_LIBRARIES})
 find_package(Eigen3 REQUIRED)
 include_directories(${Eigen3_INCLUDE_DIRS})
 
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
+
+
+# Find the QtWidgets library
+find_package(Qt5 COMPONENTS Widgets OpenGL Concurrent REQUIRED)
+
 set(LIBS ${LIBS} Qt5::Widgets Qt5::OpenGL Qt5::Concurrent)
 
 set(CMAKE_AUTOMOC ON)
@@ -58,11 +60,14 @@ set(SOURCE_FILES
 add_executable(camcalib ${SOURCE_FILES}
                         ${CAMCALIB_MOC})
 
-target_include_directories(camcalib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(camcalib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/gui/include)
+target_include_directories(camcalib PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui/include)
 
-set_property(TARGET camcalib PROPERTY CXX_STANDARD 11)
-set_property(TARGET camcalib PROPERTY CXX_STANDARD_REQUIRED ON)
+set_target_properties(camcalib PROPERTIES 
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO)
 
 target_link_libraries(camcalib ${LIBS})
 
@@ -71,5 +76,4 @@ add_custom_target(
     clang-format
     COMMENT "Executing clang-format"
     COMMAND "clang-format" -style=file -i ${SOURCE_FILES} ${HEADER_FILES}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-)
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
