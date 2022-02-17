@@ -6,7 +6,7 @@
  */
 
 #include "utils.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <opencv2/opencv.hpp>
 #include <sstream>
 
@@ -15,7 +15,7 @@ namespace libba
 std::vector<std::string> readFilesFromDir(
     const std::string& dirPath, const std::regex& extensionFilter)
 {
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
     fs::path someDir(dirPath);
     fs::directory_iterator end_iter;
     std::vector<std::string> files;
@@ -81,4 +81,4 @@ std::string matrixToHTML(const cv::Mat matrix, const std::string& tableStyle, co
     stream << "</table>";
     return stream.str();
 }
-}
+} // namespace libba
