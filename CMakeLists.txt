@@ -8,16 +8,9 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${OpenCV_LIBRARIES})
 
-  # Find Boost
-find_package(Boost COMPONENTS filesystem system)
-include_directories(${Boost_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${Boost_LIBRARIES})
-
   # Find Eigen
 find_package(Eigen3 REQUIRED)
 include_directories(${Eigen3_INCLUDE_DIRS})
-
-
 
 # Find the QtWidgets library
 find_package(Qt5 COMPONENTS Widgets OpenGL Concurrent REQUIRED)
@@ -65,7 +58,7 @@ target_include_directories(camcalib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/gui/include)
 
 set_target_properties(camcalib PROPERTIES 
-        CXX_STANDARD 11
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO)
 
