@@ -7,7 +7,7 @@
 
 #include "CameraCalibration.h"
 #include "json.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
 #include <opencv2/core.hpp>
 #include <stdexcept>
@@ -145,7 +145,7 @@ void CameraCalibration::calibrateCamera(
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::saveCameraParameters(const std::string& filePath) const
 {
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
     const auto extension = fs::path(filePath).extension().string();
     if (extension == ".xml")
         exportCameraParametersCv(filePath);

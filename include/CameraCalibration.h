@@ -5,10 +5,9 @@
  *      Author: Stephan Manthe
  */
 
-#ifndef CAMERACALIBRATION_H_
-#define CAMERACALIBRATION_H_
+#ifndef CAMERACALIBRATION_H
+#define CAMERACALIBRATION_H
 
-#include <boost/property_tree/ptree.hpp>
 #include <functional>
 #include <opencv2/opencv.hpp>
 #include <regex>
@@ -170,6 +169,6 @@ protected:
      */
     size_t calibrationFlags;
 };
-}
+} // namespace libba
 
 #endif /* CAMERACALIBRATION_H_ */
