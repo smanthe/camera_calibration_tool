@@ -88,7 +88,7 @@ cv::Mat QImageToCvMat(const QImage& inImage, const bool inCloneImageData)
 
         QImage swapped = inImage.rgbSwapped();
         return cv::Mat(swapped.height(), swapped.width(), CV_8UC3,
-                   const_cast<uchar*>(swapped.bits()), swapped.bytesPerLine())
+            const_cast<uchar*>(swapped.bits()), swapped.bytesPerLine())
             .clone();
     }
 
@@ -118,4 +118,4 @@ cv::Mat QPixmapToCvMat(const QPixmap& inPixmap, const bool inCloneImageData)
 {
     return QImageToCvMat(inPixmap.toImage(), inCloneImageData);
 }
-}
+} // namespace qtOpenCvConversions

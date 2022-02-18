@@ -26,6 +26,6 @@ std::vector<std::string> readFilesFromDir(
 std::string matrixToHTML(
     const cv::Mat matrix, const std::string& tableStyle = "", const int precision = 2);
 
-}
+} // namespace libba
 
 #endif /* UTILS_H_ */
