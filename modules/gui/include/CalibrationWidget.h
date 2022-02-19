@@ -11,6 +11,7 @@
 #include "CameraCalibration.h"
 #include <QFuture>
 #include <QWidget>
+
 class QMessageBox;
 class ImageModel;
 class ProgressState;
@@ -24,6 +25,7 @@ class CalibrationWidget;
 class CalibrationWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     CalibrationWidget(QWidget* parent = 0);
     virtual ~CalibrationWidget();
