@@ -6,7 +6,7 @@
  */
 
 #include "CameraCalibration.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include <filesystem>
 #include <fstream>
 #include <opencv2/core.hpp>
