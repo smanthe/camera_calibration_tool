@@ -16,15 +16,13 @@ ImageModel::ImageModel(QObject* parent)
     connect(this, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(changeItem(QStandardItem*)));
 }
 
-ImageModel::~ImageModel()
-{
-}
+ImageModel::~ImageModel() {}
 
 void ImageModel::changeItem(QStandardItem* item)
 {
     const int row = item->row();
     const int col = item->column();
-    
+
     if (col == 0)
         imageData.at(row).checked = item->checkState() == Qt::Checked;
 }
@@ -56,7 +54,7 @@ void ImageModel::addImage(QString imgPath)
 void ImageModel::initHeader()
 {
     QStringList header;
-    header << trUtf8("Nr.") << trUtf8("Gefunden") << trUtf8("Dateiname") << trUtf8("Fehler");
+    header << tr("Nr.") << tr("Gefunden") << tr("Dateiname") << tr("Fehler");
     setHorizontalHeaderLabels(header);
 }
 
@@ -80,9 +78,9 @@ void ImageModel::updateRow(int idx, const ImgData& data)
 {
     QString foundText = "";
     if (data.found)
-        foundText = trUtf8("Ja");
+        foundText = tr("Ja");
     else
-        foundText = trUtf8("Nein");
+        foundText = tr("Nein");
 
     setItem(idx, 1, new QStandardItem(foundText));
     item(idx, 3)->setText(QString::fromStdString(std::to_string(data.error)));
