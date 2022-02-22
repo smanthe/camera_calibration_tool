@@ -5,7 +5,7 @@
  *      Author: Stephan Manthe
  */
 
-#include "CameraCalibration.h"
+#include "camera_calibration/CameraCalibration.h"
 #include "nlohmann/json.hpp"
 #include <filesystem>
 #include <fstream>

@@ -8,9 +8,9 @@
 #ifndef CALIBRATIONWIDGET_H_
 #define CALIBRATIONWIDGET_H_
 
-#include "CameraCalibration.h"
 #include <QFuture>
 #include <QWidget>
+#include <camera_calibration/CameraCalibration.h>
 
 class QMessageBox;
 class ImageModel;

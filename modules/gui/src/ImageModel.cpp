@@ -4,10 +4,9 @@
  *  Created on: 28.01.2014
  *      Author: Stephan Manthe
  */
-#include <QFileInfo>
-
-#include "CameraCalibration.h"
 #include "ImageModel.h"
+#include <QFileInfo>
+#include <camera_calibration/CameraCalibration.h>
 
 ImageModel::ImageModel(QObject* parent)
     : QStandardItemModel(parent)

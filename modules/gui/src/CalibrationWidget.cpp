@@ -9,7 +9,6 @@
 #include "ImageModel.h"
 #include "qtOpenCVConversions.h"
 #include "ui_CalibrationWidget.h"
-#include "utils.h"
 #include <ProgressState.h>
 #include <QFileDialog>
 #include <QGraphicsPixmapItem>
@@ -17,6 +16,7 @@
 #include <QWidget>
 #include <QtConcurrent>
 #include <QtCore>
+#include <camera_calibration/utils.h>
 #include <functional>
 #include <regex>
 #include <vector>
