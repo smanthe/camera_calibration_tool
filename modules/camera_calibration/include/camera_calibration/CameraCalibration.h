@@ -5,12 +5,10 @@
  *      Author: Stephan Manthe
  */
 
-#ifndef CAMERACALIBRATION_H
-#define CAMERACALIBRATION_H
+#pragma once
 
 #include <functional>
 #include <opencv2/opencv.hpp>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -170,5 +168,3 @@ protected:
     size_t calibrationFlags;
 };
 } // namespace libba
-
-#endif /* CAMERACALIBRATION_H_ */
