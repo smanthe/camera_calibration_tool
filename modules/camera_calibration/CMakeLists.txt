@@ -1,6 +1,5 @@
 include(FetchContent)
 
-
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_Install OFF CACHE INTERNAL "")
 FetchContent_Declare(json
@@ -15,10 +14,7 @@ if(NOT json_POPULATED)
     add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-
-
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
 
 find_package(Eigen3 REQUIRED)
 
@@ -40,4 +36,5 @@ target_link_libraries(camcalib PUBLIC
     Eigen3::Eigen)
 
 target_include_directories(camcalib PUBLIC
-    include)
+    include
+    ${OpenCV_INCLUDE_DIRS})
