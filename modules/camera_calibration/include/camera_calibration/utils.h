@@ -5,8 +5,7 @@
  *      Author: Stephan Manthe
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#pragma once
 
 #include <opencv2/opencv.hpp>
 #include <regex>
@@ -27,5 +26,3 @@ std::string matrixToHTML(
     const cv::Mat matrix, const std::string& tableStyle = "", const int precision = 2);
 
 } // namespace libba
-
-#endif /* UTILS_H_ */
