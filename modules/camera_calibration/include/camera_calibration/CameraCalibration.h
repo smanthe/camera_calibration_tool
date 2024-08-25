@@ -34,6 +34,8 @@ public:
      */
     void calibrateCamera(const std::function<void(int, int, std::string)> progressFunc);
 
+    auto generateChessboardCorners3d(int width, int height) -> std::vector<cv::Point3f>;
+
     /**
      * Stops the calibration.
      */

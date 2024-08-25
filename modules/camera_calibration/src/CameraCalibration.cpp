@@ -39,11 +39,8 @@ void CameraCalibration::calibrateCamera(
     translationVector.clear();
 
     // calculate corners from the calibration pattern
-    std::vector<cv::Point3f> chessboardCorners3d;
-    for (int i = 0; i < chessboardCorners.height; ++i)
-        for (int j = 0; j < chessboardCorners.width; ++j)
-            chessboardCorners3d.emplace_back(
-                float(j * chessboardSquareWidth), float(i * chessboardSquareWidth), 0);
+    const std::vector<cv::Point3f> chessboardCorners3d
+        = this->generateChessboardCorners3d(m_chessboardCorners.width, m_chessboardCorners.height);
 
     if (calibImages.size() == 0)
         throw std::runtime_error("No images for calibration provided.");
@@ -144,6 +141,17 @@ void CameraCalibration::calibrateCamera(
     calibDataAvailabel = true;
 }
 //-------------------------------------------------------------------------------------------------
+auto CameraCalibration::generateChessboardCorners3d(int width, int height)
+    -> std::vector<cv::Point3f>
+{
+    std::vector<cv::Point3f> chessboardCorners3d;
+    for (int i = 0; i < m_chessboardCorners.height; ++i)
+        for (int j = 0; j < m_chessboardCorners.width; ++j)
+            chessboardCorners3d.emplace_back(
+                float(j * m_chessboardSquareWidth), float(i * m_chessboardSquareWidth), 0);
+
+    return chessboardCorners3d;
+}
 void CameraCalibration::saveCameraParameters(const std::string& filePath) const
 {
     namespace fs = std::filesystem;
