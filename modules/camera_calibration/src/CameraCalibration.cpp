@@ -6,9 +6,10 @@
  */
 
 #include "camera_calibration/CameraCalibration.h"
-#include "nlohmann/json.hpp"
 #include <filesystem>
 #include <fstream>
+#include <nlohmann/json.hpp>
+#include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 #include <stdexcept>
 
@@ -16,16 +17,16 @@ namespace libba
 {
 
 CameraCalibration::CameraCalibration()
-    : chessboardCorners(7, 6)
+    : m_chessboardCorners(7, 6)
     , cornerRefinmentWindowSize(10, 10)
-    , chessboardSquareWidth(0.06)
+    , m_chessboardSquareWidth(0.06)
     , stopRequested(false)
     , reprojectionError(0)
     , calibDataAvailabel(false)
     , calibrationFlags(0)
 {
 }
-//-------------------------------------------------------------------------------------------------
+
 void CameraCalibration::calibrateCamera(
     const std::function<void(int, int, std::string)> progressFunc)
 {
@@ -370,7 +371,7 @@ void CameraCalibration::clearFiles()
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::setChessboardSize(const cv::Size2i& chessboardSize)
 {
-    this->chessboardCorners = chessboardSize;
+    m_chessboardCorners = chessboardSize;
 }
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRefinmentWindowSize)
@@ -380,7 +381,7 @@ void CameraCalibration::setCornerRefinmentWindowSize(const cv::Size2i& cornerRef
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::setChessboardSquareWidth(const float chessboardSquareWidth)
 {
-    this->chessboardSquareWidth = chessboardSquareWidth;
+    m_chessboardSquareWidth = chessboardSquareWidth;
 }
 //-------------------------------------------------------------------------------------------------
 bool CameraCalibration::isStopRequested() const
@@ -405,12 +406,12 @@ bool CameraCalibration::isCalibrationDataAvailable() const
 //-------------------------------------------------------------------------------------------------
 cv::Size2i CameraCalibration::getChessboardSize() const
 {
-    return chessboardCorners;
+    return m_chessboardCorners;
 }
 //-------------------------------------------------------------------------------------------------
 float CameraCalibration::getChessboardSquareWidth() const
 {
-    return chessboardSquareWidth;
+    return m_chessboardSquareWidth;
 }
 //-------------------------------------------------------------------------------------------------
 void CameraCalibration::setCalibrationFlags(const int calibrationFlags)

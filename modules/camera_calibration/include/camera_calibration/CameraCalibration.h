@@ -100,7 +100,7 @@ protected:
     /**
      * The number of inner checkerboard corners.
      */
-    cv::Size2i chessboardCorners;
+    cv::Size2i m_chessboardCorners;
 
     /**
      * The size of the images which where used.
@@ -115,7 +115,7 @@ protected:
     /**
      * The size of the squares on the calibration pattern.
      */
-    float chessboardSquareWidth;
+    float m_chessboardSquareWidth;
 
     /**
      * The calculated calibration matrix.
